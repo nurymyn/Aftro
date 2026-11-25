@@ -1,4 +1,4 @@
-# Architecture
+# Aftro architecture
 
 ## Mobile and camera
 

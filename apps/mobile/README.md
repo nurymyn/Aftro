@@ -1,4 +1,4 @@
-# Mobile app
+# Aftro for Android and iOS
 
 Target both Android and iOS with one Unity C# project. Add Unity AR Foundation
 and the platform providers for Android (ARCore) and iOS (ARKit). Use an Android

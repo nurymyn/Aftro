@@ -24,7 +24,7 @@ class Apartment(BaseModel):
     finishes: list[FinishPackage]
 
 
-app = FastAPI(title="Apartment Preview API", version="0.1.0")
+app = FastAPI(title="Aftro API", version="0.1.0")
 
 
 @app.get("/health/live")

@@ -1,4 +1,4 @@
-# Apartment Preview
+# Aftro
 
 An AR renovation preview for unfinished apartments. Buyers use a phone to view
 different finishes in the actual room. One Unity project targets Android and iOS,
