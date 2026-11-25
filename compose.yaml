@@ -14,15 +14,35 @@ services:
       timeout: 3s
       retries: 15
 
+  migrations:
+    image: postgres:17
+    environment:
+      PGHOST: database
+      PGDATABASE: apartment_preview
+      PGUSER: preview
+      PGPASSWORD: local-dev-only
+    volumes:
+      - ./database/migrations:/migrations:ro
+    command: ["psql", "-v", "ON_ERROR_STOP=1", "-f", "/migrations/001_accounts.sql"]
+    depends_on:
+      database:
+        condition: service_healthy
+
   api:
     build:
       context: .
       dockerfile: services/api/Dockerfile
     environment:
       DATABASE_URL: postgresql://preview:local-dev-only@database:5432/apartment_preview
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_VERIFY_SERVICE_SID: ${TWILIO_VERIFY_SERVICE_SID:-}
+      AFTRO_SECURE_COOKIES: ${AFTRO_SECURE_COOKIES:-0}
     depends_on:
       database:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:8000:8000"
 

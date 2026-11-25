@@ -350,6 +350,7 @@ function renderLanguage() {
   updateReveal();
   updateFinish();
   updateCatalog();
+  document.dispatchEvent(new Event("aftro:language"));
 }
 
 document.querySelectorAll("[data-go]").forEach((button) => {
@@ -364,9 +365,18 @@ cameraNext.addEventListener("click", () => {
   updateCamera();
 });
 
-document.querySelector("#save-finish").addEventListener("click", () => {
+document.querySelector("#save-finish").addEventListener("click", async () => {
+  const selected = activeFinish;
+  const result = await window.aftroAccount?.saveFinish(selected);
+  if (result && result !== "guest") {
+    if (selected === activeFinish) {
+      statusMessage = result;
+      updateFinish();
+    }
+    return;
+  }
   try {
-    localStorage.setItem(finishKey, activeFinish);
+    localStorage.setItem(finishKey, selected);
     statusMessage = "savedStatus";
   } catch {
     statusMessage = "storageFailure";

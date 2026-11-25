@@ -9,6 +9,8 @@ from fastapi.staticfiles import StaticFiles
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
+from accounts import router as accounts_router
+
 
 class FinishPackage(BaseModel):
     slug: str
@@ -27,6 +29,7 @@ class Apartment(BaseModel):
 
 
 app = FastAPI(title="Aftro API", version="0.1.0")
+app.include_router(accounts_router)
 
 
 @app.get("/health/live")

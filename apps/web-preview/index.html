@@ -6,7 +6,9 @@
   <meta name="theme-color" content="#f6f5f2">
   <title>Aftro — Interface prototype</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auth.css">
   <script src="app.js" defer></script>
+  <script src="auth.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -21,6 +23,7 @@
       <option value="ru" lang="ru">Русский</option>
       <option value="en" lang="en">English</option>
     </select>
+    <button class="account-button" id="open-account" type="button" aria-label="Sign in"><span class="account-icon" aria-hidden="true"></span><span data-auth-text="account">Account</span></button>
   </header>
 
   <main id="top">
@@ -133,5 +136,51 @@
       <span id="catalog-status">Demo catalog</span>
     </footer>
   </main>
+  <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-heading">
+    <div class="account-heading">
+      <h2 id="account-heading">Sign in</h2>
+      <button id="auth-close" type="button" aria-label="Close">×</button>
+    </div>
+    <div id="auth-tabs" role="group">
+      <button type="button" data-auth-mode="login" aria-pressed="true" data-auth-text="login">Sign in</button>
+      <button type="button" data-auth-mode="signup" aria-pressed="false" data-auth-text="signup">Create account</button>
+    </div>
+    <form id="auth-form">
+      <div class="auth-field">
+        <label for="auth-method" data-auth-text="method">Sign in with</label>
+        <select id="auth-method">
+          <option value="phone" data-auth-text="phone">Phone number</option>
+          <option value="email" data-auth-text="email">Email</option>
+        </select>
+      </div>
+      <div class="auth-field">
+        <label for="auth-identifier" id="auth-identifier-label">Phone number</label>
+        <input id="auth-identifier" type="tel" autocomplete="username" maxlength="254" required>
+        <p class="auth-note" id="auth-phone-note" data-auth-text="phoneNote"></p>
+      </div>
+      <div class="auth-field" id="auth-code-group" hidden>
+        <label for="auth-code" data-auth-text="code">SMS code</label>
+        <div class="auth-row">
+          <input id="auth-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,10}" maxlength="10">
+          <button class="button secondary" type="button" id="auth-send-code" data-auth-text="send">Send code</button>
+        </div>
+      </div>
+      <div class="auth-field">
+        <label for="auth-password" data-auth-text="password">Password</label>
+        <div class="auth-row">
+          <input id="auth-password" type="password" autocomplete="current-password" maxlength="128" required>
+          <button class="button secondary" type="button" id="auth-toggle-password">Show</button>
+        </div>
+        <p class="auth-note" id="auth-password-note" data-auth-text="newPasswordNote" hidden></p>
+      </div>
+      <button class="button primary" id="auth-submit" type="submit">Sign in</button>
+    </form>
+    <div id="auth-profile" hidden>
+      <p id="auth-profile-id"></p>
+      <p class="auth-note" data-auth-text="profileNote"></p>
+      <button type="button" class="button secondary" id="auth-signout" data-auth-text="signout">Sign out</button>
+    </div>
+    <p id="auth-notice" aria-live="polite"></p>
+  </dialog>
 </body>
 </html>

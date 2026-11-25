@@ -21,6 +21,8 @@ jobs:
           curl --fail --silent --show-error --retry 20 --retry-all-errors \
             http://127.0.0.1:8000/api/v1/apartments/demo-apartment > /tmp/apartment.json
           python3 -c 'import json; from pathlib import Path; data = json.loads(Path("/tmp/apartment.json").read_text()); assert {item["slug"] for item in data["finishes"]} == {"light", "warm"}'
+      - name: Verify accounts and saved finishes
+        run: python3 scripts/check-accounts.py
       - name: Show service logs after a failure
         if: failure()
         run: docker compose logs
