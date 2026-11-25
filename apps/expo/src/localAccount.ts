@@ -15,11 +15,16 @@ export async function loadLocalAccount() {
   return raw === null ? null : readAccount(raw);
 }
 
-export async function createLocalAccount(method: LoginMethod, identifier: string, password: string): Promise<LocalAccount> {
+export async function cacheSharedAccount(method: LoginMethod, identifier: string, password: string): Promise<LocalAccount> {
   const salt = bytesToHex(await getRandomBytesAsync(16));
-  const account: LocalAccount = { version: 1, method, identifier, salt, verifier: await derive(password, salt) };
-  await SecureStore.setItemAsync(accountKey, JSON.stringify(account), storage);
-  return account;
+  const account: LocalAccount = { version: 1, method, identifier, salt, verifier: await derive(password, salt), serverLinked: true };
+  return markAccountShared(account);
+}
+
+export async function markAccountShared(account: LocalAccount): Promise<LocalAccount> {
+  const linked = { ...account, serverLinked: true as const };
+  await SecureStore.setItemAsync(accountKey, JSON.stringify(linked), storage);
+  return linked;
 }
 
 export async function verifyLocalPassword(account: LocalAccount, password: string) {

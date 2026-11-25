@@ -3,7 +3,7 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 
 export type LoginMethod = 'email' | 'phone';
 export type LocalAccount = {
-  version: 1; method: LoginMethod; identifier: string; salt: string; verifier: string;
+  version: 1; method: LoginMethod; identifier: string; salt: string; verifier: string; serverLinked?: true;
 };
 
 export const minPasswordLength = 15;
@@ -24,7 +24,8 @@ export function readAccount(raw: string): LocalAccount {
   if (value?.version !== 1 || (value.method !== 'email' && value.method !== 'phone') ||
     typeof value.identifier !== 'string' || normalizeIdentifier(value.method, value.identifier) !== value.identifier ||
     typeof value.salt !== 'string' || !/^[0-9a-f]{32}$/.test(value.salt) ||
-    typeof value.verifier !== 'string' || !/^[0-9a-f]{64}$/.test(value.verifier)) {
+    typeof value.verifier !== 'string' || !/^[0-9a-f]{64}$/.test(value.verifier) ||
+    (value.serverLinked !== undefined && value.serverLinked !== true)) {
     throw new Error('Invalid local account');
   }
   return value;

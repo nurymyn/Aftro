@@ -3,9 +3,11 @@
 ## Mobile client
 
 React Native and Expo Go provide the same measurement and saved-room
-screens on Android and iPhone. A local sign-in is required before opening
-the room tools. The password verifier and salt use device-only secure
-storage. The account lives on one phone.
+screens on Android and iPhone. New mobile registrations and first-time
+sign-ins use the FastAPI account endpoints and the shared PostgreSQL table.
+After successful authentication, a verifier and salt in device-only secure
+storage allow the same profile to unlock the room tools locally. Older
+local profiles can be linked explicitly from the mobile sign-in screen.
 
 The measurement flow projects the center of
 the live camera onto the floor using estimated phone height, gravity and
@@ -24,5 +26,5 @@ JSON file. The Windows Python importer validates the file and inserts the
 record directly into PostgreSQL. Reimporting a newer version of the same
 room updates its existing row. pgAdmin can display the room and quantities.
 
-The FastAPI service supports the browser preview, catalog and browser
-accounts. The Expo app and the Python importer run independently of it.
+The FastAPI service supports the browser preview, catalog and shared
+accounts. The Python room importer connects directly to PostgreSQL.

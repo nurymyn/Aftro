@@ -21,6 +21,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Start PostgreSQL and install Python dependencies
         run: |
           sudo systemctl start postgresql.service
@@ -41,6 +44,8 @@ jobs:
           python -c 'import json, sys; data = json.load(open(sys.argv[1])); assert data["name"] == "Aftro CI room"; assert {item["slug"] for item in data["finishes"]} == {"light", "warm"}' "$RUNNER_TEMP/aftro-apartment.json"
       - name: Verify accounts and saved finishes
         run: python scripts/check-accounts.py
+      - name: Verify Expo signup writes a PostgreSQL account
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON apps/expo/scripts/check-shared-account.mjs
       - name: Show API logs after a failure
         if: failure()
         run: |
