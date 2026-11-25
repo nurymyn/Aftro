@@ -1,20 +1,21 @@
 # Aftro architecture
 
-## Mobile and camera
+## Mobile client
 
-Unity C# owns the shared interface, room alignment, AR anchors and scene
-rendering. AR Foundation connects to the platform tracking provider. The first
-demo uses a measured room and manual alignment.
+The Expo app runs on Android and iPhone from the same React Native project.
+It uses Expo Camera for the live camera and QR scanner. The apartment preview
+and WebGL walkthrough use a WebView with an embedded sample for offline use.
+The app stores language and guest finish preferences on the phone.
 
-## Catalog
+## API and database
 
-FastAPI exposes apartment details and finish options to the mobile app.
-PostgreSQL stores the sample apartment and its finish packages. The API is
-read-only in this milestone.
+FastAPI serves the catalog, accounts, saved finishes and the web interface.
+PostgreSQL stores the room, renovation choices, accounts and sessions. A
+connected Expo client opens the preview on the API's origin so the same
+HTTP-only session cookie serves registration, sign-in and saved finishes.
 
-## 3D assets
+## Room visualization
 
-Use Blender to build the room at real scale and use meters across the
-3D pipeline. Keep a consistent coordinate origin and named surfaces so
-both finish packages can use the same room geometry. GLB is the planned
-delivery format for the room model.
+The room walkthrough builds geometry in WebGL. The camera alignment screen
+uses still images to illustrate the two-step placement flow. A live camera
+preview and a QR scanner are accessible from the Expo app's Camera tab.

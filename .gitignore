@@ -9,14 +9,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Unity-generated files and device packages
-/apps/mobile/[Ll]ibrary/
-/apps/mobile/[Tt]emp/
-/apps/mobile/[Oo]bj/
-/apps/mobile/[Bb]uild/
-/apps/mobile/[Bb]uilds/
-/apps/mobile/[Ll]ogs/
-/apps/mobile/[Uu]ser[Ss]ettings/
+# Device packages
 *.apk
 *.aab
 *.ipa

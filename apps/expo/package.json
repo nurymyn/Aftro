@@ -1,0 +1,31 @@
+{
+  "name": "aftro-expo",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "engines": { "node": ">=20.19.4" },
+  "scripts": {
+    "prepare:preview": "node scripts/prepare-preview.mjs",
+    "prestart": "npm run prepare:preview",
+    "start": "expo start --go",
+    "pretypecheck": "npm run prepare:preview",
+    "typecheck": "tsc --noEmit",
+    "preexport": "npm run prepare:preview",
+    "export": "expo export --platform all --output-dir dist"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~54.0.33",
+    "expo-camera": "~17.0.10",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-url-polyfill": "^2.0.0",
+    "react-native-webview": "13.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  }
+}

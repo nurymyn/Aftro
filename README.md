@@ -2,17 +2,24 @@
 
 An AR renovation preview for unfinished apartments. The interactive design
 prototype lets buyers explore the apartment, compare two finishes and try the
-camera setup flow. The native [iPhone app](apps/mobile/README.md) adds live QR scanning and a camera that anchors a finish to the room.
+camera setup flow. The [Expo app](apps/expo/README.md) brings the same
+preview, live camera and QR scanning to Android and iPhone.
 
 ## Repository layout
 
 | Path | Purpose |
 | --- | --- |
 | `apps/web-preview/` | Interactive mobile interface presentation |
-| `apps/mobile/` | Native SwiftUI and ARKit iPhone app |
+| `apps/expo/` | Shared React Native and Expo Go app |
 | `services/api/` | Python apartment and renovation catalog API |
 | `database/` | PostgreSQL schema and sample catalog |
 | `docs/` | Architecture and the first demo |
+
+## Run on Android and iPhone
+
+See [Aftro with Expo Go](apps/expo/README.md) for Windows setup, the terminal
+QR code, and how to connect the phones to the API. The sample apartment and
+3D walkthrough start without the API.
 
 ## Local development
 
@@ -44,8 +51,8 @@ The [virtual walkthrough](http://localhost:8000/preview/vr.html) opens the same
 demo room in WebGL. Move with WASD or arrow keys while the room viewer is
 focused, or use the viewpoint buttons. A compatible headset browser can use
 immersive WebXR when the page is served in a secure context.
-Stop the API with **Ctrl+C**. For an iPhone browser on the same Wi-Fi, start
-with `--host <computer Wi-Fi IP>` and open that address on port 8000.
+Stop the API with **Ctrl+C**. For phones on the same Wi-Fi, start with
+`--host <computer Wi-Fi IP>` and use that address on port 8000.
 
 You can also open `apps/web-preview/index.html` directly for a stand-alone
 design review with the sample catalog. The browser saves the selected finish
@@ -54,8 +61,8 @@ on the current device.
 ## Project status
 
 The browser supports before-and-after comparison and finish selection today.
-The browser's AR screen simulates alignment with still images. The native
-[iPhone app](apps/mobile/README.md) uses the camera and ARKit.
+The apartment's AR screen simulates alignment with still images. Expo Go's
+Camera tab provides a live preview and opens the demo apartment from a QR code.
 The VR prototype uses a procedural room model, with three finish states and
 headset controls for locomotion and finish switching. The 3D walkthrough works
 on a desktop without a headset.
