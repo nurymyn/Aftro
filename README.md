@@ -17,11 +17,15 @@ preview and guided camera measurement to Android and iPhone.
 
 ## Run on Android and iPhone
 
-See [Aftro with Expo Go](apps/expo/README.md) for Windows setup, the terminal
-QR code, and how to connect the phones to the API. The mobile app starts at
-sign-in and requires a running API to use the room tools.
+[Expo Go instructions](apps/expo/README.md) cover setup and the terminal QR.
+The Expo app opens to the room tools and saves measurements on the phone.
+To inspect a saved room in PostgreSQL, export it from **Saved** and open the
+file with `Import-Room.cmd` on Windows. pgAdmin shows the imported records
+in `public.aftro_offline_rooms`.
 
 ## Local development
+
+Use these steps to run the browser preview and its API.
 
 Install Python and PostgreSQL and start the PostgreSQL service.
 From the repository root on Windows, run:

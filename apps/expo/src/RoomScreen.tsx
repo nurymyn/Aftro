@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { ApiProblem } from './api';
 import type { AppCopy, Language } from './copy';
 import { RoomPreview } from './PreviewScreen';
 import { roomQuantities, type Finish, type Room } from './room';
@@ -8,7 +7,7 @@ import { Button, Status, Switcher, colors, layout, roomImages } from './ui';
 
 export function RoomScreen({ room, sample, text, language, full, saving, saved, error, onFinish, onFull, onEdit, onSave }: {
   room: Room; sample: boolean; text: AppCopy; language: Language; full: boolean;
-  saving: boolean; saved: boolean; error: ApiProblem | null;
+  saving: boolean; saved: boolean; error: boolean;
   onFinish: (finish: Finish) => void; onFull: () => void; onEdit: () => void; onSave: () => void;
 }) {
   const [failed, setFailed] = useState(false);
@@ -54,9 +53,9 @@ export function RoomScreen({ room, sample, text, language, full, saving, saved, 
         <Text style={layout.body}>{text.wallsNote}</Text>
       </View>
       {!sample && <>
-        <Button label={text.edit} onPress={onEdit} secondary />
+        <Button label={text.edit} onPress={onEdit} secondary disabled={saving} />
         <Button label={saving ? text.saving : text.save} onPress={onSave} disabled={saving} />
-        {error && <Status error>{text[error]}</Status>}
+        {error && <Status error>{text.saveError}</Status>}
         {saved && <Status>{text.saved}</Status>}
       </>}
     </ScrollView>

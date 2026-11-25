@@ -26,6 +26,8 @@ jobs:
           sudo systemctl start postgresql.service
           sudo -u postgres psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE aftro_ci WITH LOGIN CREATEDB PASSWORD 'aftro-ci-local'"
           python -m pip install -r services/api/requirements.txt
+      - name: Import a room directly into PostgreSQL
+        run: python scripts/check-room-import.py
       - name: Prepare and reopen the catalog
         run: |
           python scripts/start-local.py --prepare-only

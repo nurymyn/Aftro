@@ -1,57 +1,58 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-native-safe-area-context';
-import { aftroRequest, problem, type Account, type ApiProblem, type Session } from './api';
-import { AuthScreen } from './AuthScreen';
 import { CameraScreen } from './CameraScreen';
-import { copy, type Language } from './copy';
+import { copy, isLanguage, type Language } from './copy';
+import { restoreRoom, saveLocalRoom, shareRoomFile, type SavedRoom } from './localRoom';
 import { MeasureScreen } from './MeasureScreen';
 import { sampleRoom, type Room } from './room';
 import { RoomScreen } from './RoomScreen';
-import { Brand, Button, LanguagePicker, colors, layout, roomImages } from './ui';
-import { useAccount } from './useAccount';
+import { Brand, Button, LanguagePicker, Status, colors, layout, roomImages } from './ui';
 
 type Page = 'home' | 'scan' | 'camera' | 'result' | 'tour' | 'profile';
 const homeTabs = ['home', 'scan', 'profile'] as const;
+const languageKey = 'aftro.language';
 
-function Workspace({ account, language, onLanguage, onSignOut }: {
-  account: Account & Session; language: Language; onLanguage: (locale: Language) => void; onSignOut: (expired?: boolean) => void;
+function Workspace({ language, onLanguage }: {
+  language: Language; onLanguage: (locale: Language) => void;
 }) {
   const text = copy[language];
   const [page, setPage] = useState<Page>('home');
   const [mode, setMode] = useState<'camera' | 'manual'>('camera');
   const [draft, setDraft] = useState<Room | null>(null);
-  const [lastRoom, setLastRoom] = useState<Room | null>(null);
+  const [lastRoom, setLastRoom] = useState<SavedRoom | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
   const [sample, setSample] = useState(false);
   const [calibration, setCalibration] = useState({ phoneHeight: 1.4, height: 2.8 });
   const [saving, setSaving] = useState(false);
   const [savedRoom, setSavedRoom] = useState<Room | null>(null);
-  const [saveError, setSaveError] = useState<ApiProblem | null>(null);
-  const [signingOut, setSigningOut] = useState(false);
-  const { origin, token } = account;
+  const [saveError, setSaveError] = useState(false);
+  const [shareError, setShareError] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let active = true;
-    aftroRequest<Room | null>(origin, '/room', { token }).then((result) => {
-      if (active) setLastRoom((previous) => previous ?? result);
-    }).catch((error) => {
-      if (active && problem(error) === 'sign_in_required') onSignOut(true);
+    void restoreRoom().then((result) => {
+      if (active && result) setLastRoom((previous) => previous ?? result);
     });
     return () => { active = false; };
-  }, [origin, token]);
+  }, []);
 
-  function openRoom(result: Room, isSample = false) {
+  function openRoom(result: Room, isSample = false, id: string | null = null) {
     setRoom(result);
+    setRoomId(id);
     setSavedRoom(result === lastRoom ? result : null);
-    setSaveError(null);
+    setSaveError(false);
     setSample(isSample);
     setPage('result');
   }
 
   function beginMeasure(next: 'camera' | 'manual' = 'camera', initial: Room | null = null) {
     setDraft(initial);
+    if (!initial) setRoomId(null);
     setMode(next);
     setPage('scan');
   }
@@ -59,17 +60,29 @@ function Workspace({ account, language, onLanguage, onSignOut }: {
   async function save() {
     if (!room || sample || saving) return;
     setSaving(true);
-    setSaveError(null);
+    setSaveError(false);
     try {
-      const stored = await aftroRequest<Room>(origin, '/room', { token, method: 'PUT', body: room });
+      const stored = await saveLocalRoom(room, roomId);
       setLastRoom(stored);
+      setRoomId(stored.id);
       setSavedRoom(room);
-    } catch (error) {
-      const reason = problem(error);
-      if (reason === 'sign_in_required') onSignOut(true);
-      else setSaveError(reason);
+    } catch {
+      setSaveError(true);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function exportRoom() {
+    if (!lastRoom || sharing) return;
+    setSharing(true);
+    setShareError(false);
+    try {
+      await shareRoomFile(lastRoom);
+    } catch {
+      setShareError(true);
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -95,14 +108,14 @@ function Workspace({ account, language, onLanguage, onSignOut }: {
         {lastRoom && <View style={layout.panel}>
           <Text style={layout.label}>{text.recent}</Text>
           <Text style={layout.body}>{lastRoom.width} × {lastRoom.length} {text.meters}</Text>
-          <Button label={text.open} secondary onPress={() => openRoom(lastRoom)} />
+          <Button label={text.open} secondary onPress={() => openRoom(lastRoom, false, lastRoom.id)} />
         </View>}
         <Button label={text.sample} secondary onPress={() => openRoom({ ...sampleRoom, source: 'manual', finish: 'warm' }, true)} />
       </ScrollView>}
       {page === 'scan' && <MeasureScreen
         language={language} initial={draft} mode={mode} onMode={setMode}
         onCamera={(phoneHeight, height) => { setCalibration({ phoneHeight, height }); setPage('camera'); }}
-        onResult={openRoom} />}
+        onResult={(result) => openRoom(result, false, draft ? roomId : null)} />}
       {page === 'camera' && <CameraScreen language={language} {...calibration}
         onRoom={(dimensions) => openRoom({ ...dimensions, source: 'camera', finish: 'warm' })}
         onManual={() => beginMeasure('manual', draft)} />}
@@ -111,24 +124,32 @@ function Workspace({ account, language, onLanguage, onSignOut }: {
         saving={saving} saved={room === savedRoom} error={saveError}
         onFinish={(finish) => {
           setRoom((current) => current && current.finish !== finish ? { ...current, finish } : current);
-          setSaveError(null);
+          setSaveError(false);
         }}
         onFull={() => setPage('tour')} onEdit={() => beginMeasure('manual', room)} onSave={() => void save()} />}
       {page === 'profile' && <ScrollView contentContainerStyle={layout.scroll}>
         <Text accessibilityRole="header" style={layout.title}>{text.profile}</Text>
         <View style={layout.panel}>
-          <Text style={layout.label}>{text[account.kind]}</Text>
-          <Text selectable style={layout.body}>{account.identifier}</Text>
+          <Text style={layout.label}>{text.recent}</Text>
+          {lastRoom ? <>
+            <Text style={layout.body}>{lastRoom.width} × {lastRoom.length} {text.meters}</Text>
+            <Button label={text.open} secondary onPress={() => openRoom(lastRoom, false, lastRoom.id)} />
+            <Button label={sharing ? text.sharing : text.exportRoom} disabled={sharing}
+              onPress={() => void exportRoom()} />
+            <Text style={layout.body}>{text.exportHelp}</Text>
+            {shareError && <Status error>{text.exportError}</Status>}
+          </> : <Text style={layout.body}>{text.emptyRooms}</Text>}
+        </View>
+        <View style={layout.panel}>
           <Text style={layout.label}>{text.language}</Text>
           <LanguagePicker language={language} onChange={onLanguage} />
-          <Button label={text.signOut} secondary disabled={signingOut}
-            onPress={() => { setSigningOut(true); onSignOut(); }} />
         </View>
       </ScrollView>}
       {!focused && <View style={styles.tabs}>
         {homeTabs.map((tab) => {
           const selected = page === tab || (tab === 'home' && page === 'result');
-          return <Pressable key={tab} accessibilityRole="tab" accessibilityState={{ selected }}
+          return <Pressable key={tab} accessibilityRole="tab" accessibilityState={{ selected, disabled: saving }}
+            disabled={saving}
             onPress={() => tab === 'scan' ? beginMeasure() : setPage(tab)}
             style={[styles.tab, selected && styles.selected]}>
             <Text style={styles.tabLabel}>{text[tab]}</Text>
@@ -140,15 +161,27 @@ function Workspace({ account, language, onLanguage, onSignOut }: {
 }
 
 function Aftro() {
-  const state = useAccount();
+  const [ready, setReady] = useState(false);
+  const [language, setLanguage] = useState<Language>('kk');
+
+  useEffect(() => {
+    let active = true;
+    void AsyncStorage.getItem(languageKey).then((locale) => {
+      if (active && isLanguage(locale)) setLanguage(locale);
+    }).catch(() => {}).finally(() => { if (active) setReady(true); });
+    return () => { active = false; };
+  }, []);
+
+  function chooseLanguage(locale: Language) {
+    setLanguage(locale);
+    void AsyncStorage.setItem(languageKey, locale).catch(() => {});
+  }
+
   return (
     <SafeAreaView style={layout.screen}>
       <StatusBar style="dark" />
-      {state.loading ? <View style={styles.loading}><Brand /><ActivityIndicator color={colors.accent} /></View>
-        : state.account ? <Workspace account={state.account} language={state.language} onLanguage={state.chooseLanguage}
-          onSignOut={(expired) => void state.signOut(expired)} />
-        : <AuthScreen origin={state.origin} language={state.language} onLanguage={state.chooseLanguage}
-          onOrigin={state.changeOrigin} onAuth={state.signIn} sessionError={state.error} />}
+      {ready ? <Workspace language={language} onLanguage={chooseLanguage} />
+        : <View style={styles.loading}><Brand /><ActivityIndicator color={colors.accent} /></View>}
     </SafeAreaView>
   );
 }
