@@ -10,78 +10,84 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#top" aria-label="Aftro home">
+    <a class="brand" href="#top" aria-label="Aftro home" data-i18n-label="homeLink">
       <span class="brand-mark" aria-hidden="true"></span> AFTRO
     </a>
-    <span class="topbar-label">Interface prototype</span>
+    <span class="topbar-label"><span data-i18n="interface">Interface prototype</span></span>
+
+    <select id="language" class="language-select" aria-label="Interface language" data-i18n-label="language">
+      <option value="kk" lang="kk">Қазақша</option>
+      <option value="ru" lang="ru">Русский</option>
+      <option value="en" lang="en">English</option>
+    </select>
   </header>
 
   <main id="top">
     <section class="introduction" aria-labelledby="title">
       <div>
-        <p class="eyebrow"><span></span> AFTRO FOR ANDROID &amp; IOS</p>
-        <h1 id="title">See it <em>finished.</em></h1>
-        <p class="subtitle">From an unfinished apartment to a place you can picture living in.</p>
+        <p class="eyebrow"><span></span> <span data-i18n="platform">AFTRO FOR ANDROID &amp; IOS</span></p>
+        <h1 id="title"><span data-i18n="headline">See it</span> <em><span data-i18n="accent">finished.</span></em></h1>
+        <p class="subtitle"><span data-i18n="tagline">From an unfinished apartment to a place you can picture living in.</span></p>
       </div>
-      <button class="button primary prototype-button" type="button" data-go="compare">Try the prototype <span aria-hidden="true">↗</span></button>
+      <button class="button primary prototype-button" type="button" data-go="compare"><span data-i18n="try">Try the prototype</span> <span aria-hidden="true">↗</span></button>
     </section>
 
-    <nav class="screen-nav" aria-label="Prototype screens">
-      <button type="button" data-go="property" aria-current="step">Apartment</button>
-      <button type="button" data-go="compare">Compare</button>
-      <button type="button" data-go="finishes">Finishes</button>
-      <button type="button" data-go="camera">AR setup</button>
+    <nav class="screen-nav" aria-label="Prototype screens" data-i18n-label="nav">
+      <button type="button" data-go="property" aria-current="step"><span data-i18n="apartment">Apartment</span></button>
+      <button type="button" data-go="compare"><span data-i18n="compare">Compare</span></button>
+      <button type="button" data-go="finishes"><span data-i18n="finishes">Finishes</span></button>
+      <button type="button" data-go="camera"><span data-i18n="ar">AR setup</span></button>
     </nav>
 
     <div class="design-board">
       <section class="frame is-active" id="property" aria-labelledby="property-label">
-        <h2 id="property-label" class="frame-label">Apartment <small>Find the preview</small></h2>
+        <h2 id="property-label" class="frame-label"><span data-i18n="apartment">Apartment</span> <small><span data-i18n="find">Find the preview</span></small></h2>
         <div class="phone">
-          <div class="app-bar"><span class="brand mini"><span class="brand-mark" aria-hidden="true"></span> AFTRO</span><span class="location">Astana, KZ</span></div>
-          <div class="hero room room-warm" role="img" aria-label="Warm Oak concept for the demo living room"><span class="photo-tag">FINISH PREVIEW</span></div>
+          <div class="app-bar"><span class="brand mini"><span class="brand-mark" aria-hidden="true"></span> AFTRO</span><span class="location"><span data-i18n="city">Astana, KZ</span></span></div>
+          <div class="hero room room-warm" role="img" aria-label="Warm Oak concept for the demo living room" data-i18n-label="hero"><span class="photo-tag"><span data-i18n="preview">FINISH PREVIEW</span></span></div>
           <div class="phone-content">
-            <p class="kicker">DEMO APARTMENT</p>
-            <h3>Living room</h3>
-            <p class="description">Explore two finishes for the same space.</p>
-            <dl class="specs"><div><dt>Room</dt><dd data-area>16.2 m²</dd></div><div><dt>Dimensions</dt><dd data-dimensions>4.5 × 3.6 m</dd></div></dl>
+            <p class="kicker"><span data-i18n="demo">DEMO APARTMENT</span></p>
+            <h3><span data-i18n="room">Living room</span></h3>
+            <p class="description"><span data-i18n="explore">Explore two finishes for the same space.</span></p>
+            <dl class="specs"><div><dt><span data-i18n="area">Room</span></dt><dd data-area>16.2 m²</dd></div><div><dt><span data-i18n="dimensions">Dimensions</span></dt><dd data-dimensions>4.5 × 3.6 m</dd></div></dl>
           </div>
           <div class="phone-actions">
-            <button type="button" class="button primary" data-go="compare">Compare before &amp; after <span aria-hidden="true">→</span></button>
-            <button type="button" class="button secondary" data-go="camera">View AR setup</button>
+            <button type="button" class="button primary" data-go="compare"><span data-i18n="compareAction">Compare before &amp; after</span> <span aria-hidden="true">→</span></button>
+            <button type="button" class="button secondary" data-go="camera"><span data-i18n="arAction">View AR setup</span></button>
           </div>
         </div>
       </section>
 
       <section class="frame" id="compare" aria-labelledby="compare-label">
-        <h2 id="compare-label" class="frame-label">Compare <small>Drag to reveal the finish</small></h2>
+        <h2 id="compare-label" class="frame-label"><span data-i18n="compare">Compare</span> <small><span data-i18n="drag">Drag to reveal the finish</span></small></h2>
         <div class="phone">
-          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment">←</button><strong>Before &amp; after</strong><span class="bar-spacer"></span></div>
+          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment" data-i18n-label="backApartment">←</button><strong><span data-i18n="beforeAfter">Before &amp; after</span></strong><span class="bar-spacer"></span></div>
           <div class="comparison" id="comparison">
             <div class="room room-before comparison-layer"></div>
             <div class="room room-warm comparison-layer after-layer" id="after-image"></div>
-            <span class="photo-tag compare-before">BEFORE</span><span class="photo-tag compare-after">AFTER</span>
+            <span class="photo-tag compare-before"><span data-i18n="before">BEFORE</span></span><span class="photo-tag compare-after"><span data-i18n="after">AFTER</span></span>
             <span class="divider" aria-hidden="true"><i>‹ ›</i></span>
-            <input id="reveal" type="range" min="0" max="100" value="46" aria-label="Percentage of the before image" aria-valuetext="46% before, 54% after">
+            <input id="reveal" type="range" min="0" max="100" value="46" aria-label="Percentage of the before image" data-i18n-label="slider" aria-valuetext="46% before, 54% after">
           </div>
           <div class="phone-content compact">
-            <p class="kicker">SELECTED FINISH</p>
+            <p class="kicker"><span data-i18n="selected">SELECTED FINISH</span></p>
             <h3 id="selected-finish">Warm Oak</h3>
             <p class="description" id="selected-materials">Warm beige plaster · Walnut parquet</p>
           </div>
           <div class="phone-actions">
-            <button type="button" class="button primary" data-go="finishes">Change finish <span aria-hidden="true">→</span></button>
+            <button type="button" class="button primary" data-go="finishes"><span data-i18n="change">Change finish</span> <span aria-hidden="true">→</span></button>
           </div>
         </div>
       </section>
 
       <section class="frame" id="finishes" aria-labelledby="finishes-label">
-        <h2 id="finishes-label" class="frame-label">Finishes <small>Choose and save a style</small></h2>
+        <h2 id="finishes-label" class="frame-label"><span data-i18n="finishes">Finishes</span> <small><span data-i18n="choose">Choose and save a style</span></small></h2>
         <div class="phone">
-          <div class="app-bar"><button class="back" type="button" data-go="compare" aria-label="Back to comparison">←</button><strong>Finishes</strong><span class="bar-spacer"></span></div>
+          <div class="app-bar"><button class="back" type="button" data-go="compare" aria-label="Back to comparison" data-i18n-label="backCompare">←</button><strong><span data-i18n="finishes">Finishes</span></strong><span class="bar-spacer"></span></div>
           <div class="phone-content finish-content">
-            <h3>Make it yours.</h3>
-            <p class="description">Choose a finish to see it in this room.</p>
-            <div class="finish-list" id="finish-list" role="group" aria-label="Renovation finishes">
+            <h3><span data-i18n="make">Make it yours.</span></h3>
+            <p class="description"><span data-i18n="chooseDetail">Choose a finish to see it in this room.</span></p>
+            <div class="finish-list" id="finish-list" role="group" aria-label="Renovation finishes" data-i18n-label="finishLabel">
               <button type="button" class="finish-card" data-finish="warm" aria-pressed="true">
                 <span class="room room-warm thumb" aria-hidden="true"></span>
                 <span class="finish-text"><strong>Warm Oak</strong><small>Beige plaster · Walnut parquet</small></span><span class="radio" aria-hidden="true"></span>
@@ -94,18 +100,18 @@
             <p class="save-status" id="save-status" aria-live="polite"></p>
           </div>
           <div class="phone-actions">
-            <button type="button" class="button primary" data-go="compare">Apply and compare <span aria-hidden="true">→</span></button>
-            <button type="button" class="button secondary" id="save-finish">Save this finish</button>
+            <button type="button" class="button primary" data-go="compare"><span data-i18n="apply">Apply and compare</span> <span aria-hidden="true">→</span></button>
+            <button type="button" class="button secondary" id="save-finish"><span data-i18n="save">Save this finish</span></button>
           </div>
         </div>
       </section>
 
       <section class="frame" id="camera" aria-labelledby="camera-label">
-        <h2 id="camera-label" class="frame-label">AR setup <small>Align the room on site</small></h2>
+        <h2 id="camera-label" class="frame-label"><span data-i18n="ar">AR setup</span> <small><span data-i18n="align">Align the room on site</span></small></h2>
         <div class="phone">
-          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment">←</button><strong>Camera setup</strong><span class="bar-spacer"></span></div>
+          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment" data-i18n-label="backApartment">←</button><strong><span data-i18n="camera">Camera setup</span></strong><span class="bar-spacer"></span></div>
           <div class="camera-scene room room-before" id="camera-scene" aria-hidden="true">
-            <span class="photo-tag">GUIDED SIMULATION</span>
+            <span class="photo-tag"><span data-i18n="simulation">GUIDED SIMULATION</span></span>
             <span class="reticle"><i></i></span>
             <span class="alignment-line"></span>
           </div>
@@ -122,7 +128,7 @@
     </div>
 
     <footer class="footer">
-      <span>Aftro · Interactive design review</span>
+      <span><span data-i18n="footer">Aftro · Interactive design review</span></span>
       <span id="catalog-status">Demo catalog</span>
     </footer>
   </main>

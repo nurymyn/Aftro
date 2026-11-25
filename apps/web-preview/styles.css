@@ -41,6 +41,8 @@
   .brand-mark::before { top: .04em; right: 0; }
   .brand-mark::after { bottom: .04em; left: 0; }
   .topbar-label { color: var(--muted); border-left: 1px solid var(--line); padding-left: 20px; font-size: 13px; }
+  .language-select { margin-inline-start: auto; min-height: 37px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); font: inherit; font-size: 13px; }
+  .language-select:focus-visible { outline: 3px solid #0060cf; outline-offset: 2px; }
   main { max-width: 1480px; margin: 0 auto; padding: 48px 5vw 22px; }
   .introduction { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 34px; }
   .eyebrow { font-size: 11px; font-weight: 750; letter-spacing: .19em; color: var(--muted); display: flex; align-items: center; gap: 8px; }
@@ -53,6 +55,7 @@
   .frame-label { display: flex; flex-direction: column; gap: 3px; margin: 0 0 10px 3px; font-size: 13px; font-weight: 750; }
   .frame-label small { font-size: 11px; color: var(--muted); font-weight: 500; }
   .screen-nav { display: none; }
+  html:lang(ru) h1, html:lang(kk) h1 { font-size: clamp(38px, 5.35vw, 79px); }
   .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; margin-top: 19px; padding-top: 13px; border-top: 1px solid var(--line); }
 }
 
@@ -148,4 +151,5 @@
     .button { min-height: 46px; }
   }
   @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  @media (max-width: 460px) { .topbar-label { display: none; } }
 }
