@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Aftro — Interface prototype</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Aftro home">
+      <span class="brand-mark" aria-hidden="true"></span> AFTRO
+    </a>
+    <span class="topbar-label">Interface prototype</span>
+  </header>
+
+  <main id="top">
+    <section class="introduction" aria-labelledby="title">
+      <div>
+        <p class="eyebrow"><span></span> AFTRO FOR ANDROID &amp; IOS</p>
+        <h1 id="title">See it <em>finished.</em></h1>
+        <p class="subtitle">From an unfinished apartment to a place you can picture living in.</p>
+      </div>
+      <button class="button primary prototype-button" type="button" data-go="compare">Try the prototype <span aria-hidden="true">↗</span></button>
+    </section>
+
+    <nav class="screen-nav" aria-label="Prototype screens">
+      <button type="button" data-go="property" aria-current="step">Apartment</button>
+      <button type="button" data-go="compare">Compare</button>
+      <button type="button" data-go="finishes">Finishes</button>
+      <button type="button" data-go="camera">AR setup</button>
+    </nav>
+
+    <div class="design-board">
+      <section class="frame is-active" id="property" aria-labelledby="property-label">
+        <h2 id="property-label" class="frame-label">Apartment <small>Find the preview</small></h2>
+        <div class="phone">
+          <div class="app-bar"><span class="brand mini"><span class="brand-mark" aria-hidden="true"></span> AFTRO</span><span class="location">Astana, KZ</span></div>
+          <div class="hero room room-warm" role="img" aria-label="Warm Oak concept for the demo living room"><span class="photo-tag">FINISH PREVIEW</span></div>
+          <div class="phone-content">
+            <p class="kicker">DEMO APARTMENT</p>
+            <h3>Living room</h3>
+            <p class="description">Explore two finishes for the same space.</p>
+            <dl class="specs"><div><dt>Room</dt><dd data-area>16.2 m²</dd></div><div><dt>Dimensions</dt><dd data-dimensions>4.5 × 3.6 m</dd></div></dl>
+          </div>
+          <div class="phone-actions">
+            <button type="button" class="button primary" data-go="compare">Compare before &amp; after <span aria-hidden="true">→</span></button>
+            <button type="button" class="button secondary" data-go="camera">View AR setup</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="frame" id="compare" aria-labelledby="compare-label">
+        <h2 id="compare-label" class="frame-label">Compare <small>Drag to reveal the finish</small></h2>
+        <div class="phone">
+          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment">←</button><strong>Before &amp; after</strong><span class="bar-spacer"></span></div>
+          <div class="comparison" id="comparison">
+            <div class="room room-before comparison-layer"></div>
+            <div class="room room-warm comparison-layer after-layer" id="after-image"></div>
+            <span class="photo-tag compare-before">BEFORE</span><span class="photo-tag compare-after">AFTER</span>
+            <span class="divider" aria-hidden="true"><i>‹ ›</i></span>
+            <input id="reveal" type="range" min="0" max="100" value="46" aria-label="Percentage of the before image" aria-valuetext="46% before, 54% after">
+          </div>
+          <div class="phone-content compact">
+            <p class="kicker">SELECTED FINISH</p>
+            <h3 id="selected-finish">Warm Oak</h3>
+            <p class="description" id="selected-materials">Warm beige plaster · Walnut parquet</p>
+          </div>
+          <div class="phone-actions">
+            <button type="button" class="button primary" data-go="finishes">Change finish <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="frame" id="finishes" aria-labelledby="finishes-label">
+        <h2 id="finishes-label" class="frame-label">Finishes <small>Choose and save a style</small></h2>
+        <div class="phone">
+          <div class="app-bar"><button class="back" type="button" data-go="compare" aria-label="Back to comparison">←</button><strong>Finishes</strong><span class="bar-spacer"></span></div>
+          <div class="phone-content finish-content">
+            <h3>Make it yours.</h3>
+            <p class="description">Choose a finish to see it in this room.</p>
+            <div class="finish-list" id="finish-list" role="group" aria-label="Renovation finishes">
+              <button type="button" class="finish-card" data-finish="warm" aria-pressed="true">
+                <span class="room room-warm thumb" aria-hidden="true"></span>
+                <span class="finish-text"><strong>Warm Oak</strong><small>Beige plaster · Walnut parquet</small></span><span class="radio" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="finish-card" data-finish="light" aria-pressed="false">
+                <span class="room room-light thumb" aria-hidden="true"></span>
+                <span class="finish-text"><strong>Soft Light</strong><small>White paint · Light oak</small></span><span class="radio" aria-hidden="true"></span>
+              </button>
+            </div>
+            <p class="save-status" id="save-status" aria-live="polite"></p>
+          </div>
+          <div class="phone-actions">
+            <button type="button" class="button primary" data-go="compare">Apply and compare <span aria-hidden="true">→</span></button>
+            <button type="button" class="button secondary" id="save-finish">Save this finish</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="frame" id="camera" aria-labelledby="camera-label">
+        <h2 id="camera-label" class="frame-label">AR setup <small>Align the room on site</small></h2>
+        <div class="phone">
+          <div class="app-bar"><button class="back" type="button" data-go="property" aria-label="Back to apartment">←</button><strong>Camera setup</strong><span class="bar-spacer"></span></div>
+          <div class="camera-scene room room-before" id="camera-scene" aria-hidden="true">
+            <span class="photo-tag">GUIDED SIMULATION</span>
+            <span class="reticle"><i></i></span>
+            <span class="alignment-line"></span>
+          </div>
+          <div class="phone-content compact" aria-live="polite">
+            <p class="kicker" id="camera-step">STEP 1 OF 2</p>
+            <h3 id="camera-heading">Find a floor corner.</h3>
+            <p class="description" id="camera-instruction">Point at the corner where two walls meet the floor.</p>
+          </div>
+          <div class="phone-actions">
+            <button type="button" class="button primary" id="camera-next">Mark corner <span aria-hidden="true">→</span></button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <span>Aftro · Interactive design review</span>
+      <span id="catalog-status">Demo catalog</span>
+    </footer>
+  </main>
+</body>
+</html>

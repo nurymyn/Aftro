@@ -1,9 +1,11 @@
 """Read-only apartment and renovation catalog."""
 
 import os
+from pathlib import Path
 
 import psycopg
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from psycopg.rows import dict_row
 from pydantic import BaseModel
 
@@ -75,3 +77,13 @@ def get_apartment(slug: str) -> Apartment:
         raise HTTPException(status_code=404, detail="Apartment not found")
 
     return Apartment.model_validate(apartment)
+
+
+configured_preview_dir = os.getenv("AFTRO_PREVIEW_DIR")
+preview_dir = (
+    Path(configured_preview_dir)
+    if configured_preview_dir
+    else Path(__file__).resolve().parents[2] / "apps" / "web-preview"
+)
+if preview_dir.is_dir():
+    app.mount("/preview", StaticFiles(directory=preview_dir, html=True), name="preview")

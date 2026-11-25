@@ -15,7 +15,9 @@ services:
       retries: 15
 
   api:
-    build: ./services/api
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
     environment:
       DATABASE_URL: postgresql://preview:local-dev-only@database:5432/apartment_preview
     depends_on:

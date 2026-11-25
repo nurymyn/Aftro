@@ -1,0 +1,9 @@
+**
+!services
+!services/api
+!services/api/Dockerfile
+!services/api/main.py
+!services/api/requirements.txt
+!apps
+!apps/web-preview
+!apps/web-preview/**

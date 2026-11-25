@@ -1,14 +1,15 @@
 # Aftro
 
-An AR renovation preview for unfinished apartments. Buyers use a phone to view
-different finishes in the actual room. One Unity project targets Android and iOS,
-and one Python API serves both platforms.
+An AR renovation preview for unfinished apartments. The interactive design
+prototype lets buyers explore the apartment, compare two finishes and try the
+camera setup flow. A shared Unity app is planned for on-device AR.
 
 ## Repository layout
 
 | Path | Purpose |
 | --- | --- |
-| `apps/mobile/` | Shared Unity project for Android and iOS |
+| `apps/web-preview/` | Interactive mobile interface presentation |
+| `apps/mobile/` | Unity AR implementation plan for Android and iOS |
 | `services/api/` | Python apartment and renovation catalog API |
 | `database/` | PostgreSQL schema and sample catalog |
 | `docs/` | Architecture and the first demo |
@@ -21,17 +22,19 @@ Run the API and PostgreSQL with Docker Compose.
 docker compose up --build
 ```
 
-Open [API documentation](http://localhost:8000/docs) or
-[the sample apartment](http://localhost:8000/api/v1/apartments/demo-apartment).
+Open the [interface prototype](http://localhost:8000/preview/) or
+[API documentation](http://localhost:8000/docs).
 Stop the services with `docker compose down`.
 
-The API binds to localhost by default. See the [mobile guide](apps/mobile/README.md)
-for the planned on-device connection and AR flow.
+You can also open `apps/web-preview/index.html` directly for a stand-alone
+design review with the sample catalog. The browser saves the selected finish
+on the current device.
 
 ## Project status
 
-The first repository milestone is a read-only catalog. The mobile guide and
-[architecture notes](docs/architecture.md) describe the implementation plan for
-room alignment and switching renovation packages.
+The browser supports before-and-after comparison and finish selection today.
+The AR setup screen uses still images to simulate alignment. The
+[mobile guide](apps/mobile/README.md) and [architecture notes](docs/architecture.md)
+detail the planned camera integration.
 
 See [Contributing](CONTRIBUTING.md) for the branch and pull request workflow.
