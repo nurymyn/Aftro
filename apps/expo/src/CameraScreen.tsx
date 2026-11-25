@@ -14,17 +14,22 @@ export function CameraScreen({ language, phoneHeight, height, onRoom, onManual }
   onRoom: (dimensions: Dimensions) => void; onManual: () => void;
 }) {
   const text = copy[language];
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [active, setActive] = useState(AppState.currentState === 'active');
   const [points, setPoints] = useState<Point[]>([]);
   const [status, setStatus] = useState<'motionUnavailable' | 'badAim' | 'badRoom' | null>(null);
   const [sensorReady, setSensorReady] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const latest = useRef<Reading | null>(null);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => setActive(state === 'active'));
+    const subscription = AppState.addEventListener('change', (state) => {
+      setActive(state === 'active');
+      if (state === 'active') void getPermission().catch(() => {});
+      else setCameraReady(false);
+    });
     return () => subscription.remove();
-  }, []);
+  }, [getPermission]);
 
   useEffect(() => {
     if (!active || !permission?.granted) return;
@@ -108,7 +113,8 @@ export function CameraScreen({ language, phoneHeight, height, onRoom, onManual }
 
   return (
     <View style={styles.screen}>
-      {active && <CameraView facing="back" style={StyleSheet.absoluteFill} pointerEvents="none" />}
+      {active && <CameraView facing="back" style={StyleSheet.absoluteFill} pointerEvents="none"
+        onCameraReady={() => setCameraReady(true)} />}
       <View style={styles.hud}>
         <Text style={styles.step}>{points.length + 1} / 3</Text>
         <Text accessibilityRole="header" style={styles.title}>{text[directions[points.length]]}</Text>
@@ -118,7 +124,7 @@ export function CameraScreen({ language, phoneHeight, height, onRoom, onManual }
       <View style={styles.hud}>
         {status && <Status error>{text[status]}</Status>}
         <Button label={sensorReady || status === 'motionUnavailable' ? text.mark : text.scanBusy}
-          disabled={!sensorReady || status === 'motionUnavailable'} onPress={mark} />
+          disabled={!cameraReady || !sensorReady || status === 'motionUnavailable'} onPress={mark} />
         <View style={styles.actions}>
           <Pressable accessibilityRole="button" hitSlop={9} onPress={onManual}>
             <Text style={layout.link}>{text.manual}</Text>

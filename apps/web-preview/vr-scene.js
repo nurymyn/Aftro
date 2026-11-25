@@ -132,10 +132,10 @@ function aftroMesh(finish, room) {
   return new Float32Array(vertices);
 }
 
-function aftroProjection(aspect) {
-  const range = 0.045 - 22;
+function aftroProjection(aspect, far = 22) {
+  const range = 0.045 - far;
   const f = 1 / Math.tan(Math.PI / 5.4);
-  return new Float32Array([f/aspect,0,0,0, 0,f,0,0, 0,0,(22+0.045)/range,-1, 0,0,2*22*0.045/range,0]);
+  return new Float32Array([f/aspect,0,0,0, 0,f,0,0, 0,0,(far+0.045)/range,-1, 0,0,2*far*0.045/range,0]);
 }
 
 function aftroView({ x, y, z, yaw, pitch }) {

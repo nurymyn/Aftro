@@ -117,7 +117,7 @@ export function AuthScreen({ language, onLanguage, origin, onOrigin, onAuth, ses
             <Field label={text.code} keyboardType="number-pad" autoComplete="one-time-code"
               maxLength={10} value={code} editable={!busy} onChangeText={setCode} />
           </>}
-          {error && <Status error>{text[error]}</Status>}
+          {error && !serverOpen && <Status error>{text[error]}</Status>}
           <Button label={busy ? text.connecting : mode === 'login' ? text.signIn : text.signUp}
             disabled={busy} onPress={() => void submit()} />
         </View>
@@ -129,6 +129,7 @@ export function AuthScreen({ language, onLanguage, origin, onOrigin, onAuth, ses
           <Text style={layout.body}>{text.serverHelp}</Text>
           <Field label={text.address} placeholder="http://192.168.1.42:8000" autoCapitalize="none"
             keyboardType="url" autoCorrect={false} value={address} editable={!busy} onChangeText={setAddress} />
+          {error && <Status error>{text[error]}</Status>}
           <Button label={busy ? text.connecting : text.connect} secondary disabled={busy} onPress={() => void connect()} />
         </View>}
         <LanguagePicker language={language} onChange={onLanguage} />

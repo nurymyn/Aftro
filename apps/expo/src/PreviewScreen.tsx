@@ -15,7 +15,8 @@ html,body,canvas { margin:0; width:100%; height:100%; display:block; overflow:hi
 ${preview.scene.replace(/<\/script/gi, '<\\/script')}
 const room = ${JSON.stringify(room)};
 const canvas = document.getElementById('room');
-const scene = createAftroScene(canvas, room);
+let scene;
+try { scene = createAftroScene(canvas, room); } catch { scene = null; }
 const position = { x: 0, y: Math.min(1.52, room.height * 0.73), z: room.length * 0.37, pitch: -0.12, yaw: 0 };
 function draw() {
   if (!scene) return;
@@ -25,7 +26,7 @@ function draw() {
   if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   scene.gl.viewport(0, 0, w, h);
   scene.clear();
-  scene.draw(aftroProjection(w / h), aftroView(position));
+  scene.draw(aftroProjection(w / h, 48), aftroView(position));
 }
 function setFinish(value) {
   if (Object.hasOwn(aftroPresets, value)) { scene?.setFinish(value); draw(); }
@@ -49,6 +50,7 @@ canvas.addEventListener('pointermove', (e) => {
   draw();
 });
 canvas.addEventListener('lostpointercapture', () => { tracking = null; });
+canvas.addEventListener('webglcontextlost', () => window.ReactNativeWebView?.postMessage('no3d'));
 window.AftroRoom = { setFinish, step };
 window.addEventListener('resize', draw);
 if (scene) setFinish(${JSON.stringify(finish)});
