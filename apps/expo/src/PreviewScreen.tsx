@@ -20,7 +20,7 @@ type Props = {
 };
 
 export function PreviewScreen({ page, language, origin, preferences, onPage, onLanguage, onPreference, onDisconnect }: Props) {
-  const browser = useRef<WebView>(null);
+  const browser = useRef<WebView<unknown>>(null);
   const initialLanguage = useRef(language);
   const source = useMemo(() => origin
     ? { uri: origin + (page === 'tour' ? '/preview/vr.html' : '/preview/') }
@@ -54,7 +54,7 @@ export function PreviewScreen({ page, language, origin, preferences, onPage, onL
   }
 
   return (
-    <WebView
+    <WebView<unknown>
       ref={browser}
       source={source}
       originWhitelist={['*']}
