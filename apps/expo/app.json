@@ -19,7 +19,8 @@
         "cameraPermission": "Aftro uses the camera to mark floor corners.",
         "recordAudioAndroid": false
       }],
-      ["expo-sensors", { "motionPermission": "Aftro uses motion sensors to estimate room dimensions." }]
+      ["expo-sensors", { "motionPermission": "Aftro uses motion sensors to estimate room dimensions." }],
+      "expo-secure-store"
     ]
   }
 }

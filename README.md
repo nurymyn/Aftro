@@ -18,7 +18,8 @@ preview and guided camera measurement to Android and iPhone.
 ## Run on Android and iPhone
 
 [Expo Go instructions](apps/expo/README.md) cover setup and the terminal QR.
-The Expo app opens to the room tools and saves measurements on the phone.
+Register or sign in on the phone to open the room tools. The mobile account
+and measurements are local to the phone.
 To inspect a saved room in PostgreSQL, export it from **Saved** and open the
 file with `Import-Room.cmd` on Windows. pgAdmin shows the imported records
 in `public.aftro_offline_rooms`.

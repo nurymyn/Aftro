@@ -3,8 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-native-safe-area-context';
+import { AuthScreen } from './AuthScreen';
 import { CameraScreen } from './CameraScreen';
 import { copy, isLanguage, type Language } from './copy';
+import type { LocalAccount } from './credentials';
+import { loadLocalAccount } from './localAccount';
 import { restoreRoom, saveLocalRoom, shareRoomFile, type SavedRoom } from './localRoom';
 import { MeasureScreen } from './MeasureScreen';
 import { sampleRoom, type Room } from './room';
@@ -15,8 +18,8 @@ type Page = 'home' | 'scan' | 'camera' | 'result' | 'tour' | 'profile';
 const homeTabs = ['home', 'scan', 'profile'] as const;
 const languageKey = 'aftro.language';
 
-function Workspace({ language, onLanguage }: {
-  language: Language; onLanguage: (locale: Language) => void;
+function Workspace({ language, onLanguage, onSignOut }: {
+  language: Language; onLanguage: (locale: Language) => void; onSignOut: () => void;
 }) {
   const text = copy[language];
   const [page, setPage] = useState<Page>('home');
@@ -143,6 +146,7 @@ function Workspace({ language, onLanguage }: {
         <View style={layout.panel}>
           <Text style={layout.label}>{text.language}</Text>
           <LanguagePicker language={language} onChange={onLanguage} />
+          <Button label={text.signOut} onPress={onSignOut} secondary disabled={sharing || saving} />
         </View>
       </ScrollView>}
       {!focused && <View style={styles.tabs}>
@@ -163,14 +167,32 @@ function Workspace({ language, onLanguage }: {
 function Aftro() {
   const [ready, setReady] = useState(false);
   const [language, setLanguage] = useState<Language>('kk');
+  const [account, setAccount] = useState<LocalAccount | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [accountError, setAccountError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
     void AsyncStorage.getItem(languageKey).then((locale) => {
       if (active && isLanguage(locale)) setLanguage(locale);
-    }).catch(() => {}).finally(() => { if (active) setReady(true); });
+    }).catch(() => {});
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    setReady(false);
+    setAccountError(false);
+    void loadLocalAccount().then((stored) => {
+      if (active) setAccount(stored);
+    }).catch(() => {
+      if (active) setAccountError(true);
+    }).finally(() => {
+      if (active) setReady(true);
+    });
+    return () => { active = false; };
+  }, [attempt]);
 
   function chooseLanguage(locale: Language) {
     setLanguage(locale);
@@ -180,8 +202,16 @@ function Aftro() {
   return (
     <SafeAreaView style={layout.screen}>
       <StatusBar style="dark" />
-      {ready ? <Workspace language={language} onLanguage={chooseLanguage} />
-        : <View style={styles.loading}><Brand /><ActivityIndicator color={colors.accent} /></View>}
+      {!ready ? <View style={styles.loading}><Brand /><ActivityIndicator color={colors.accent} /></View>
+        : accountError ? <View style={layout.scroll}>
+          <Status error>{copy[language].accountUnavailable}</Status>
+          <Button label={copy[language].retry} onPress={() => setAttempt((current) => current + 1)} />
+        </View>
+        : signedIn ? <Workspace language={language} onLanguage={chooseLanguage} onSignOut={() => setSignedIn(false)} />
+        : <AuthScreen account={account} language={language} onLanguage={chooseLanguage} onAuth={(verified) => {
+          setAccount(verified);
+          setSignedIn(true);
+        }} />}
     </SafeAreaView>
   );
 }

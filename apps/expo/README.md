@@ -15,8 +15,10 @@ npm.cmd start
 
 Use the same free Expo account on iPhone and in the CLI. Connect the phone
 and computer to the same Wi-Fi. Scan the terminal QR using the iPhone Camera
-or Android Expo Go. The Aftro home screen, measurement and saving use local
-data and work without the Python API.
+or Android Expo Go. Create an account with an email address or phone number
+and a password. On a fresh launch, sign in to reach the room tools. The
+account is stored on this phone and works without the Python API. Email
+and phone numbers are used as local logins without SMS or email verification.
 
 ## Measure and save
 

@@ -3,7 +3,11 @@
 ## Mobile client
 
 React Native and Expo Go provide the same measurement and saved-room
-screens on Android and iPhone. The measurement flow projects the center of
+screens on Android and iPhone. A local sign-in is required before opening
+the room tools. The password verifier and salt use device-only secure
+storage. The account lives on one phone.
+
+The measurement flow projects the center of
 the live camera onto the floor using estimated phone height, gravity and
 magnetic heading. Three corners produce two adjacent edges for a rectangular
 room. The manual path supports editing or entering all three room dimensions.
