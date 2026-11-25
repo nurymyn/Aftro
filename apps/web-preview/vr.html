@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Aftro — Virtual walkthrough</title>
+  <link rel="stylesheet" href="vr.css">
+  <script src="vr-scene.js" defer></script>
+  <script src="vr.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./index.html"><i aria-hidden="true"></i>AFTRO</a>
+    <a class="back" href="./index.html" data-copy="back">Mobile AR</a>
+    <select id="language" aria-label="Interface language">
+      <option value="kk" lang="kk">Қазақша</option>
+      <option value="ru" lang="ru">Русский</option>
+      <option value="en" lang="en">English</option>
+    </select>
+  </header>
+  <main>
+    <section class="heading" aria-labelledby="walkthrough-title">
+      <div>
+        <p class="eyebrow" data-copy="location">ASTANA · DEMO APARTMENT</p>
+        <h1 id="walkthrough-title" data-copy="title">Virtual walkthrough</h1>
+        <p data-copy="subtitle">Explore the same room at full scale and switch the renovation finish.</p>
+      </div>
+      <button class="enter" id="headset" type="button" disabled data-copy="headset">Enter VR</button>
+    </section>
+    <div class="workspace">
+      <section class="stage" aria-label="Room viewer">
+        <div class="view" id="view" data-finish="warm">
+          <canvas id="room" tabindex="0" aria-label="Interactive 3D view of the living room"></canvas>
+          <span class="view-tag" id="current-finish" aria-live="polite">Warm Oak</span>
+        </div>
+        <div class="toolbar">
+          <div class="viewpoints" aria-label="Viewpoints">
+            <button type="button" data-position="entry" data-copy="entry">Entrance</button>
+            <button type="button" data-position="window" data-copy="window">Window</button>
+          </div>
+          <button id="reset" type="button" data-copy="reset">Reset view</button>
+        </div>
+      </section>
+      <aside class="options">
+        <h2 data-copy="finishes">Renovation finish</h2>
+        <div role="group" id="finishes" aria-label="Renovation finish">
+          <button class="finish" type="button" data-style="before" aria-pressed="false">
+            <img src="assets/room-before.jpg" alt="" width="56" height="58">
+            <span><strong data-copy="before">Unfinished</strong><small data-copy="beforeDetail">Concrete walls and floor</small></span>
+          </button>
+          <button class="finish" type="button" data-style="warm" aria-pressed="true">
+            <img src="assets/room-warm.jpg" alt="" width="56" height="58">
+            <span><strong data-copy="warm">Warm Oak</strong><small data-copy="warmDetail">Beige plaster · dark parquet</small></span>
+          </button>
+          <button class="finish" type="button" data-style="light" aria-pressed="false">
+            <img src="assets/room-light.jpg" alt="" width="56" height="58">
+            <span><strong data-copy="light">Soft Light</strong><small data-copy="lightDetail">White paint · light oak</small></span>
+          </button>
+        </div>
+        <p class="guide" id="guide"></p>
+        <p class="status" id="status" role="status"></p>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

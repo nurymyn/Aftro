@@ -1,5 +1,6 @@
 const messages = {
   "en": {
+    "walkthrough": "VR walkthrough",
     "title": "Aftro — Interface prototype",
     "interface": "Interface prototype",
     "language": "Interface language",
@@ -69,6 +70,7 @@ const messages = {
     "sqMeters": "m²"
   },
   "kk": {
+    "walkthrough": "VR туры",
     "title": "Aftro — Интерфейс прототипі",
     "interface": "Интерфейс прототипі",
     "language": "Интерфейс тілі",
@@ -138,6 +140,7 @@ const messages = {
     "sqMeters": "м²"
   },
   "ru": {
+    "walkthrough": "VR-тур",
     "title": "Aftro — Прототип интерфейса",
     "interface": "Прототип интерфейса",
     "language": "Язык интерфейса",
