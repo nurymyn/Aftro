@@ -16,9 +16,11 @@
     },
     "plugins": [
       ["expo-camera", {
-        "cameraPermission": "Aftro uses the camera to scan apartment codes and preview a room.",
+        "cameraPermission": "Aftro uses the camera to mark floor corners.",
         "recordAudioAndroid": false
-      }]
+      }],
+      ["expo-sensors", { "motionPermission": "Aftro uses motion sensors to estimate room dimensions." }],
+      "expo-secure-store"
     ]
   }
 }

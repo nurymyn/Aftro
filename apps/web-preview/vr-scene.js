@@ -9,7 +9,7 @@ function aftroColor(hex) {
   return [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255);
 }
 
-function aftroMesh(finish) {
+function aftroMesh(finish, room) {
   const theme = aftroPresets[finish];
   const vertices = [];
   function box(x, y, z, w, h, d, hex, variation = 1) {
@@ -26,6 +26,39 @@ function aftroMesh(finish) {
     for (const [normal, points] of faces) {
       for (const index of [0, 1, 2, 0, 2, 3]) vertices.push(...points[index], ...normal, ...rgb);
     }
+  }
+
+  if (room) {
+    const { width: w, length: d, height: h } = room;
+    const left = -w / 2, back = -d / 2;
+    box(left, -0.12, back, w, 0.12, d, theme.floor);
+    box(left, h, back, w, 0.08, d, theme.ceiling);
+    box(left - 0.06, 0, back, 0.06, h, d, theme.wall, 0.96);
+    box(w / 2, 0, back, 0.06, h, d, theme.wall, 0.97);
+    box(left, 0, back - 0.06, w, h, 0.06, theme.wall);
+    box(left, 0, d / 2, w, h, 0.06, theme.wall, 0.95);
+
+    if (finish !== "before") {
+      const rows = Math.ceil(w / 0.22);
+      for (let i = 0; i < rows; i++) {
+        const x = i * 0.22;
+        box(left + x, 0, back, Math.min(0.216, w - x), 0.006, d, theme.floor, 0.90 + (i % 4) * 0.039);
+      }
+      box(left, 0, back, w, 0.065, 0.025, theme.trim);
+      for (const x of [left, w / 2 - 0.025]) box(x, 0, back, 0.025, 0.065, d, theme.trim);
+      if (w >= 2.1 && d >= 2.2) {
+        const sofa = Math.min(w * 0.66, 2.6);
+        box(-sofa / 2, 0.12, back + 0.18, sofa, 0.25, 0.70, theme.fabric);
+        box(-sofa / 2, 0.33, back + 0.17, sofa, 0.44, 0.16, theme.fabric, 0.94);
+        for (const x of [-sofa / 2, sofa / 2 - 0.16]) {
+          box(x, 0.32, back + 0.27, 0.16, 0.29, 0.56, theme.fabric);
+        }
+        box(-sofa * 0.43, 0.01, back + 0.91, sofa * 0.86, 0.012, Math.min(d * 0.36, 1.6), theme.rug);
+        box(-0.43, 0.36, back + 1.12, 0.86, 0.06, 0.43, theme.wood);
+        box(-0.19, 0.02, back + 1.21, 0.38, 0.34, 0.23, theme.wood);
+      }
+    }
+    return new Float32Array(vertices);
   }
 
   box(-2.25, -0.16, -1.8, 4.5, 0.16, 3.6, theme.floor);
@@ -117,7 +150,7 @@ function aftroView({ x, y, z, yaw, pitch }) {
   ]);
 }
 
-function createAftroScene(canvas) {
+function createAftroScene(canvas, room) {
   const gl = canvas.getContext("webgl", { alpha: false, antialias: true, xrCompatible: true });
   if (!gl) return null;
   function compile(type, source) {
@@ -197,7 +230,7 @@ function createAftroScene(canvas) {
   let meshCount = 0;
 
   function setFinish(finish) {
-    const geometry = aftroMesh(finish);
+    const geometry = aftroMesh(finish, room);
     gl.bindBuffer(gl.ARRAY_BUFFER, meshBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, geometry, gl.STATIC_DRAW);
     meshCount = geometry.length / 9;

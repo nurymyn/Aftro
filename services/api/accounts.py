@@ -9,6 +9,7 @@ import re
 import secrets
 from contextlib import contextmanager
 from threading import BoundedSemaphore
+from typing import Literal
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request as ProviderRequest
@@ -44,6 +45,14 @@ class PhoneNumber(BaseModel):
 
 class FinishChoice(BaseModel):
     finish_slug: str = Field(min_length=1, max_length=128)
+
+
+class MeasuredRoom(BaseModel):
+    width: float = Field(ge=0.8, le=20, allow_inf_nan=False)
+    length: float = Field(ge=0.8, le=20, allow_inf_nan=False)
+    height: float = Field(ge=1.8, le=6, allow_inf_nan=False)
+    source: Literal["camera", "manual"]
+    finish: Literal["before", "warm", "light"] = "warm"
 
 
 @contextmanager
@@ -120,8 +129,16 @@ def token_hash(token: str | None) -> bytes | None:
     return hashlib.sha256(token.encode()).digest() if token and TOKEN.fullmatch(token) else None
 
 
+def request_token_hash(request: Request) -> bytes | None:
+    authorization = request.headers.get("Authorization")
+    if authorization is None:
+        return token_hash(request.cookies.get(COOKIE))
+    scheme, _, token = authorization.partition(" ")
+    return token_hash(token) if scheme.lower() == "bearer" else None
+
+
 def new_session(connection, request: Request, account_id: int) -> str:
-    previous = token_hash(request.cookies.get(COOKIE))
+    previous = request_token_hash(request)
     if previous:
         connection.execute("DELETE FROM aftro_sessions WHERE token_hash = %s", (previous,))
     token = secrets.token_urlsafe(32)
@@ -133,14 +150,18 @@ def new_session(connection, request: Request, account_id: int) -> str:
     return token
 
 
-def send_session(response: Response, request: Request, token: str) -> None:
+def send_session(response: Response, request: Request, account: dict, token: str) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    result = public_account(account)
+    if request.headers.get("X-Aftro-Client") == "mobile":
+        return {**result, "access_token": token}
     secure = request.url.scheme == "https" or os.getenv("AFTRO_SECURE_COOKIES") == "1"
     response.set_cookie(COOKIE, token, max_age=SESSION_AGE, httponly=True, secure=secure, samesite="lax")
-    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 def get_account(request: Request) -> dict:
-    digest = token_hash(request.cookies.get(COOKIE))
+    digest = request_token_hash(request)
     if not digest:
         raise HTTPException(401, "sign_in_required")
     with database() as connection:
@@ -231,8 +252,7 @@ def register(payload: Registration, request: Request, response: Response) -> dic
         if account is None:
             raise HTTPException(409, "account_exists")
         token = new_session(connection, request, account["id"])
-    send_session(response, request, token)
-    return public_account(account)
+    return send_session(response, request, account, token)
 
 
 @router.post("/login", dependencies=[Depends(json_request)])
@@ -250,13 +270,12 @@ def login(payload: Credentials, request: Request, response: Response) -> dict:
         raise HTTPException(401, "incorrect_credentials")
     with database() as connection:
         token = new_session(connection, request, account["id"])
-    send_session(response, request, token)
-    return public_account(account)
+    return send_session(response, request, account, token)
 
 
 @router.post("/logout", status_code=204, dependencies=[Depends(json_request)])
 def logout(request: Request, response: Response) -> None:
-    digest = token_hash(request.cookies.get(COOKIE))
+    digest = request_token_hash(request)
     if digest:
         with database() as connection:
             connection.execute("DELETE FROM aftro_sessions WHERE token_hash = %s", (digest,))
@@ -297,3 +316,29 @@ def save_finish(apartment_slug: str, payload: FinishChoice, account: dict = Depe
     except psycopg.errors.ForeignKeyViolation as error:
         raise HTTPException(404, "finish_not_found") from error
     return {"finish_slug": payload.finish_slug}
+
+@router.get("/room", response_model=MeasuredRoom | None)
+def saved_room(response: Response, account: dict = Depends(get_account)):
+    response.headers["Cache-Control"] = "no-store"
+    with database() as connection:
+        return connection.execute(
+            "SELECT width, length, height, source, finish FROM aftro_rooms WHERE account_id = %s",
+            (account["id"],),
+        ).fetchone()
+
+
+@router.put("/room", response_model=MeasuredRoom, dependencies=[Depends(json_request)])
+def save_room(payload: MeasuredRoom, response: Response, account: dict = Depends(get_account)):
+    response.headers["Cache-Control"] = "no-store"
+    with database() as connection:
+        connection.execute(
+            """
+            INSERT INTO aftro_rooms (account_id, width, length, height, source, finish)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (account_id) DO UPDATE
+            SET width = excluded.width, length = excluded.length, height = excluded.height,
+                source = excluded.source, finish = excluded.finish
+            """,
+            (account["id"], payload.width, payload.length, payload.height, payload.source, payload.finish),
+        )
+    return payload

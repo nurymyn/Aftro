@@ -48,15 +48,15 @@ def development_connection() -> str:
 
 def prepare_database(dsn: str) -> str:
     catalog = ROOT / "database" / "init"
-    accounts = ROOT / "database" / "migrations" / "001_accounts.sql"
+    migrations = ROOT / "database" / "migrations"
     with psycopg.connect(dsn, autocommit=True, connect_timeout=4) as connection:
-        # Hold the session lock until both setup transactions finish.
+        # Hold the session lock until setup and migrations finish.
         connection.execute("SELECT pg_advisory_lock(802113467)")
         with connection.transaction():
             connection.execute((catalog / "001_create_catalog.sql").read_text(encoding="utf-8"))
             connection.execute((catalog / "002_seed_demo_catalog.sql").read_text(encoding="utf-8"))
-        # The account migration contains its own transaction.
-        connection.execute(accounts.read_text(encoding="utf-8"))
+        for migration in sorted(migrations.glob("*.sql")):
+            connection.execute(migration.read_text(encoding="utf-8"))
         return connection.info.dbname
 
 

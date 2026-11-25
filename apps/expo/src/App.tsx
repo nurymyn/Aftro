@@ -1,235 +1,172 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
-} from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-native-safe-area-context';
+import { aftroRequest, problem, type Account, type ApiProblem, type Session } from './api';
+import { AuthScreen } from './AuthScreen';
 import { CameraScreen } from './CameraScreen';
-import { PreviewScreen } from './PreviewScreen';
-import { copy, isLanguage, languages, type Language } from './copy';
-import { isFinishPreference, parseOrigin, type GuestPreferences } from './preview';
+import { copy, type Language } from './copy';
+import { MeasureScreen } from './MeasureScreen';
+import { sampleRoom, type Room } from './room';
+import { RoomScreen } from './RoomScreen';
+import { Brand, Button, LanguagePicker, colors, layout, roomImages } from './ui';
+import { useAccount } from './useAccount';
 
-const languageKey = 'aftro.language';
-const originKey = 'aftro.server-origin';
-const finishKeys = ['aftro.demo.finish', 'aftro.vr.finish'];
-const tabs = ['apartment', 'camera', 'tour', 'settings'] as const;
-type Tab = (typeof tabs)[number];
-type Notice = 'invalidAddress' | 'unreachable';
+type Page = 'home' | 'scan' | 'camera' | 'result' | 'tour' | 'profile';
+const homeTabs = ['home', 'scan', 'profile'] as const;
 
-function Aftro() {
-  const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<Tab>('apartment');
-  const [language, setLanguage] = useState<Language>('kk');
-  const [origin, setOrigin] = useState<string | null>(null);
-  const [address, setAddress] = useState('');
-  const [connecting, setConnecting] = useState(false);
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const guest = useRef<GuestPreferences>({});
-  const messages = copy[language];
+function Workspace({ account, language, onLanguage, onSignOut }: {
+  account: Account & Session; language: Language; onLanguage: (locale: Language) => void; onSignOut: (expired?: boolean) => void;
+}) {
+  const text = copy[language];
+  const [page, setPage] = useState<Page>('home');
+  const [mode, setMode] = useState<'camera' | 'manual'>('camera');
+  const [draft, setDraft] = useState<Room | null>(null);
+  const [lastRoom, setLastRoom] = useState<Room | null>(null);
+  const [room, setRoom] = useState<Room | null>(null);
+  const [sample, setSample] = useState(false);
+  const [calibration, setCalibration] = useState({ phoneHeight: 1.4, height: 2.8 });
+  const [saving, setSaving] = useState(false);
+  const [savedRoom, setSavedRoom] = useState<Room | null>(null);
+  const [saveError, setSaveError] = useState<ApiProblem | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const { origin, token } = account;
 
   useEffect(() => {
-    let mounted = true;
-    AsyncStorage.multiGet([languageKey, originKey, ...finishKeys]).then((values) => {
-      if (!mounted) return;
-      const stored = new Map(values);
-      const savedLanguage = stored.get(languageKey);
-      const savedAddress = stored.get(originKey);
-      if (isLanguage(savedLanguage)) setLanguage(savedLanguage);
-      if (savedAddress) {
-        setOrigin(parseOrigin(savedAddress));
-        setAddress(savedAddress);
-      }
-      for (const key of finishKeys) {
-        const value = stored.get(key);
-        if (typeof value === 'string' && isFinishPreference(key, value)) guest.current[key] = value;
-      }
-    }).catch(() => {
-      // Demo mode works without local preferences.
-    }).finally(() => {
-      if (mounted) setReady(true);
+    let active = true;
+    aftroRequest<Room | null>(origin, '/room', { token }).then((result) => {
+      if (active) setLastRoom((previous) => previous ?? result);
+    }).catch((error) => {
+      if (active && problem(error) === 'sign_in_required') onSignOut(true);
     });
-    return () => { mounted = false; };
-  }, []);
+    return () => { active = false; };
+  }, [origin, token]);
 
-  function updateLanguage(value: Language) {
-    setLanguage(value);
-    void AsyncStorage.setItem(languageKey, value).catch(() => {});
+  function openRoom(result: Room, isSample = false) {
+    setRoom(result);
+    setSavedRoom(result === lastRoom ? result : null);
+    setSaveError(null);
+    setSample(isSample);
+    setPage('result');
   }
 
-  function disconnect() {
-    setOrigin(null);
-    setNotice(null);
-    void AsyncStorage.removeItem(originKey).catch(() => {});
+  function beginMeasure(next: 'camera' | 'manual' = 'camera', initial: Room | null = null) {
+    setDraft(initial);
+    setMode(next);
+    setPage('scan');
   }
 
-  function updatePreference(key: string, value: string) {
-    guest.current[key] = value;
-    void AsyncStorage.setItem(key, value).catch(() => {});
-  }
-
-  async function connect() {
-    const candidate = parseOrigin(address);
-    if (!candidate) {
-      setNotice('invalidAddress');
-      return;
-    }
-
-    setConnecting(true);
-    setNotice(null);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-
+  async function save() {
+    if (!room || sample || saving) return;
+    setSaving(true);
+    setSaveError(null);
     try {
-      const response = await fetch(candidate + '/api/v1/apartments/demo-apartment', {
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) throw new Error('Aftro API unavailable');
-      const apartment = await response.json();
-      if (!Number.isFinite(apartment?.width_m) || !Array.isArray(apartment?.finishes)) {
-        throw new Error('Unexpected Aftro API response');
-      }
-      setAddress(candidate);
-      setOrigin(candidate);
-      setTab('apartment');
-      void AsyncStorage.setItem(originKey, candidate).catch(() => {});
-    } catch {
-      setNotice('unreachable');
+      const stored = await aftroRequest<Room>(origin, '/room', { token, method: 'PUT', body: room });
+      setLastRoom(stored);
+      setSavedRoom(room);
+    } catch (error) {
+      const reason = problem(error);
+      if (reason === 'sign_in_required') onSignOut(true);
+      else setSaveError(reason);
     } finally {
-      clearTimeout(timeout);
-      setConnecting(false);
+      setSaving(false);
     }
   }
 
-  function handleServerError() {
-    disconnect();
-    setNotice('unreachable');
-  }
-
+  const focused = page === 'camera' || page === 'tour';
   return (
-    <SafeAreaView style={styles.shell}>
-      <StatusBar style="dark" />
-      {!ready ? (
-        <View style={styles.loading}><ActivityIndicator color="#e96536" /></View>
-      ) : (
-        <View style={styles.content}>
-          <View style={[styles.content, tab !== 'apartment' && styles.hidden]}>
-            <PreviewScreen
-              key={origin ?? 'offline'}
-              page="apartment"
-              origin={origin}
-              language={language}
-              preferences={guest.current}
-              onPage={setTab}
-              onLanguage={updateLanguage}
-              onPreference={updatePreference}
-              onDisconnect={handleServerError}
-            />
-          </View>
-          {tab === 'camera' && <CameraScreen language={language} onApartment={() => setTab('apartment')} />}
-          {tab === 'tour' && (
-            <PreviewScreen
-              key={'tour-' + (origin ?? 'offline')}
-              page="tour"
-              origin={origin}
-              language={language}
-              preferences={guest.current}
-              onPage={setTab}
-              onLanguage={updateLanguage}
-              onPreference={updatePreference}
-              onDisconnect={handleServerError}
-            />
-          )}
-          {tab === 'settings' && (
-            <ScrollView contentContainerStyle={styles.settings} keyboardShouldPersistTaps="handled">
-              <Text style={styles.heading}>{messages.settings}</Text>
-              <Text style={styles.fieldLabel}>{messages.language}</Text>
-              <View style={styles.languages}>
-                {languages.map(({ id, name }) => (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: id === language }}
-                    onPress={() => updateLanguage(id)}
-                    key={id}
-                    style={[styles.languageChoice, id === language && styles.active]}
-                  >
-                    <Text style={styles.controlText}>{name}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <Text style={styles.fieldLabel}>{messages.server}</Text>
-              <Text style={styles.help}>{messages.serverHelp}</Text>
-              <Text style={styles.connection}>{origin ? messages.connected : messages.offline}</Text>
-              <TextInput
-                accessibilityLabel={messages.address}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-                editable={!connecting}
-                placeholder="http://192.168.1.42:8000"
-                placeholderTextColor="#666f67"
-                value={address}
-                onChangeText={(value) => { setAddress(value); setNotice(null); }}
-                onSubmitEditing={() => { if (!connecting) void connect(); }}
-                style={styles.input}
-              />
-              {notice && <Text accessibilityLiveRegion="polite" style={styles.error}>{messages[notice]}</Text>}
-              <Pressable accessibilityRole="button" disabled={connecting} onPress={() => void connect()} style={styles.primary}>
-                <Text style={styles.controlText}>{connecting ? messages.connecting : messages.connect}</Text>
-              </Pressable>
-              {origin && (
-                <Pressable accessibilityRole="button" disabled={connecting} onPress={disconnect} style={styles.languageChoice}>
-                  <Text style={styles.controlText}>{messages.disconnect}</Text>
-                </Pressable>
-              )}
-            </ScrollView>
-          )}
-        </View>
-      )}
-      <View style={styles.tabs}>
-        {tabs.map((item) => (
-          <Pressable
-            accessibilityRole="tab"
-            accessibilityState={{ selected: item === tab }}
-            key={item}
-            onPress={() => setTab(item)}
-            style={[styles.tab, item === tab && styles.active]}
-          >
-            <Text style={styles.tabText}>{messages[item]}</Text>
-          </Pressable>
-        ))}
+    <View style={layout.screen}>
+      <View style={styles.header}>
+        {focused ? <Pressable accessibilityRole="button" hitSlop={10}
+          onPress={() => setPage(page === 'camera' ? 'scan' : 'result')}>
+          <Text style={layout.link}>‹ {text.return}</Text>
+        </Pressable> : <Brand />}
+        {focused && <Text style={layout.label}>{page === 'camera' ? text.scan : text.tour}</Text>}
       </View>
+      {page === 'home' && <ScrollView contentContainerStyle={layout.scroll}>
+        <View style={styles.card}>
+          <Image source={roomImages.warm} style={styles.hero} />
+          <View style={styles.heroCopy}>
+            <Text accessibilityRole="header" style={styles.heroTitle}>{text.hero}</Text>
+            <Text style={styles.heroBody}>{text.heroNote}</Text>
+            <Button label={text.start} onPress={() => beginMeasure()} />
+          </View>
+        </View>
+        {lastRoom && <View style={layout.panel}>
+          <Text style={layout.label}>{text.recent}</Text>
+          <Text style={layout.body}>{lastRoom.width} × {lastRoom.length} {text.meters}</Text>
+          <Button label={text.open} secondary onPress={() => openRoom(lastRoom)} />
+        </View>}
+        <Button label={text.sample} secondary onPress={() => openRoom({ ...sampleRoom, source: 'manual', finish: 'warm' }, true)} />
+      </ScrollView>}
+      {page === 'scan' && <MeasureScreen
+        language={language} initial={draft} mode={mode} onMode={setMode}
+        onCamera={(phoneHeight, height) => { setCalibration({ phoneHeight, height }); setPage('camera'); }}
+        onResult={openRoom} />}
+      {page === 'camera' && <CameraScreen language={language} {...calibration}
+        onRoom={(dimensions) => openRoom({ ...dimensions, source: 'camera', finish: 'warm' })}
+        onManual={() => beginMeasure('manual', draft)} />}
+      {(page === 'result' || page === 'tour') && room && <RoomScreen
+        room={room} text={text} language={language} sample={sample} full={page === 'tour'}
+        saving={saving} saved={room === savedRoom} error={saveError}
+        onFinish={(finish) => {
+          setRoom((current) => current && current.finish !== finish ? { ...current, finish } : current);
+          setSaveError(null);
+        }}
+        onFull={() => setPage('tour')} onEdit={() => beginMeasure('manual', room)} onSave={() => void save()} />}
+      {page === 'profile' && <ScrollView contentContainerStyle={layout.scroll}>
+        <Text accessibilityRole="header" style={layout.title}>{text.profile}</Text>
+        <View style={layout.panel}>
+          <Text style={layout.label}>{text[account.kind]}</Text>
+          <Text selectable style={layout.body}>{account.identifier}</Text>
+          <Text style={layout.label}>{text.language}</Text>
+          <LanguagePicker language={language} onChange={onLanguage} />
+          <Button label={text.signOut} secondary disabled={signingOut}
+            onPress={() => { setSigningOut(true); onSignOut(); }} />
+        </View>
+      </ScrollView>}
+      {!focused && <View style={styles.tabs}>
+        {homeTabs.map((tab) => {
+          const selected = page === tab || (tab === 'home' && page === 'result');
+          return <Pressable key={tab} accessibilityRole="tab" accessibilityState={{ selected }}
+            onPress={() => tab === 'scan' ? beginMeasure() : setPage(tab)}
+            style={[styles.tab, selected && styles.selected]}>
+            <Text style={styles.tabLabel}>{text[tab]}</Text>
+          </Pressable>;
+        })}
+      </View>}
+    </View>
+  );
+}
+
+function Aftro() {
+  const state = useAccount();
+  return (
+    <SafeAreaView style={layout.screen}>
+      <StatusBar style="dark" />
+      {state.loading ? <View style={styles.loading}><Brand /><ActivityIndicator color={colors.accent} /></View>
+        : state.account ? <Workspace account={state.account} language={state.language} onLanguage={state.chooseLanguage}
+          onSignOut={(expired) => void state.signOut(expired)} />
+        : <AuthScreen origin={state.origin} language={state.language} onLanguage={state.chooseLanguage}
+          onOrigin={state.changeOrigin} onAuth={state.signIn} sessionError={state.error} />}
     </SafeAreaView>
   );
 }
 
 export default function App() {
-  return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <Aftro />
-    </SafeAreaProvider>
-  );
+  return <SafeAreaProvider initialMetrics={initialWindowMetrics}><Aftro /></SafeAreaProvider>;
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1, backgroundColor: '#f7f4ed' },
-  content: { flex: 1 },
-  loading: { flex: 1, justifyContent: 'center' },
-  hidden: { display: 'none' },
-  tabs: { flexDirection: 'row', gap: 4, padding: 8, borderTopWidth: 1, borderColor: '#e0ded3' },
-  tab: { flex: 1, minHeight: 44, padding: 4, alignItems: 'center', justifyContent: 'center', borderRadius: 12 },
-  tabText: { color: '#1f2a23', textAlign: 'center', fontSize: 12, fontWeight: '700' },
-  active: { backgroundColor: '#ffe1cf' },
-  settings: { padding: 24, gap: 12 },
-  heading: { fontSize: 28, fontWeight: '700', color: '#17241e', marginBottom: 6 },
-  fieldLabel: { fontSize: 16, fontWeight: '700', color: '#17241e', marginTop: 8 },
-  languages: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  languageChoice: { padding: 12, minHeight: 44, justifyContent: 'center', borderWidth: 1, borderRadius: 12, borderColor: '#dfded3' },
-  controlText: { color: '#17241e', fontSize: 15, fontWeight: '700' },
-  help: { color: '#556359', lineHeight: 22, fontSize: 15 },
-  connection: { color: '#446547', fontWeight: '600' },
-  input: { borderColor: '#dfded3', borderWidth: 1, borderRadius: 12, minHeight: 50, padding: 12, color: '#17241e', backgroundColor: '#fffffa' },
-  error: { fontSize: 14, color: '#963d27' },
-  primary: { minHeight: 49, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fa7946' },
+  header: { paddingVertical: 9, paddingHorizontal: 22, minHeight: 50, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  card: { backgroundColor: colors.dark, borderRadius: 25, overflow: 'hidden' },
+  hero: { width: '100%', height: 244 },
+  heroCopy: { gap: 13, padding: 18 },
+  heroTitle: { color: colors.surface, fontWeight: '700', fontSize: 28, letterSpacing: -0.5 },
+  heroBody: { color: '#e5dfd4', fontSize: 15, lineHeight: 21 },
+  tabs: { flexDirection: 'row', gap: 9, padding: 9, borderTopWidth: 1, borderColor: colors.line },
+  tab: { flex: 1, minHeight: 45, padding: 5, justifyContent: 'center', alignItems: 'center', borderRadius: 12 },
+  selected: { backgroundColor: colors.accentSoft },
+  tabLabel: { color: colors.ink, fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 14 },
 });

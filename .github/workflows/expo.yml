@@ -31,4 +31,5 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx expo install --check
       - run: npm run typecheck
+      - run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-room.mjs
       - run: npm run export

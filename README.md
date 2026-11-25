@@ -3,7 +3,7 @@
 An AR renovation preview for unfinished apartments. The interactive design
 prototype lets buyers explore the apartment, compare two finishes and try the
 camera setup flow. The [Expo app](apps/expo/README.md) brings the same
-preview, live camera and QR scanning to Android and iPhone.
+preview and guided camera measurement to Android and iPhone.
 
 ## Repository layout
 
@@ -18,8 +18,8 @@ preview, live camera and QR scanning to Android and iPhone.
 ## Run on Android and iPhone
 
 See [Aftro with Expo Go](apps/expo/README.md) for Windows setup, the terminal
-QR code, and how to connect the phones to the API. The sample apartment and
-3D walkthrough start without the API.
+QR code, and how to connect the phones to the API. The mobile app starts at
+sign-in and requires a running API to use the room tools.
 
 ## Local development
 
@@ -61,8 +61,9 @@ on the current device.
 ## Project status
 
 The browser supports before-and-after comparison and finish selection today.
-The apartment's AR screen simulates alignment with still images. Expo Go's
-Camera tab provides a live preview and opens the demo apartment from a QR code.
+The browser's AR screen illustrates on-site alignment. On Expo Go, mark
+three floor corners to estimate the dimensions of a rectangular room,
+then preview finishes and material quantities in a room scaled to those dimensions.
 The VR prototype uses a procedural room model, with three finish states and
 headset controls for locomotion and finish switching. The 3D walkthrough works
 on a desktop without a headset.
