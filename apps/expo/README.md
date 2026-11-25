@@ -7,24 +7,23 @@ without starting Python or PostgreSQL.
 
 ## Start on Windows
 
-1. Install [Node.js LTS](https://nodejs.org/).
+1. Install [Node.js 24 LTS](https://nodejs.org/).
 2. On iPhone, install [Expo Go from the App Store](https://apps.apple.com/app/expo-go/id982107779).
-   On Android, install the [SDK 54 version of Expo Go](https://expo.dev/go?sdkVersion=54&platform=android&device=true).
+   On Android, install the [SDK 58 version of Expo Go](https://expo.dev/go?sdkVersion=58&platform=android&device=true).
 3. Connect the computer and both phones to the same Wi-Fi. From the repo root:
 
    ```powershell
    cd apps/expo
-   npm install
-   npx expo login
-   npm start
+   npm.cmd install
+   npx.cmd expo login
+   npm.cmd start
    ```
 
 4. Sign in to Expo Go on the iPhone with the same free Expo account as the
    CLI. Scan the terminal QR with the iPhone Camera or from Expo Go on Android.
    Keep the terminal open while using the app.
 
-The Expo SDK is pinned to the version supported by Expo Go on the iPhone
-App Store. The Android Expo Go SDK must match it.
+Aftro uses Expo SDK 58. Expo Go on both phones must support SDK 58.
 
 ## Connect the Python API
 
