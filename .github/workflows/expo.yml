@@ -1,0 +1,36 @@
+name: Expo app
+
+on:
+  pull_request:
+    paths:
+      - 'apps/expo/**'
+      - 'apps/web-preview/**'
+      - '.github/workflows/expo.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/expo/**'
+      - 'apps/web-preview/**'
+      - '.github/workflows/expo.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: apps/expo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npx expo install --check
+      - run: npm run typecheck
+      - run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-room.mjs
+      - run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-local-account.mjs
+      - run: npm run export

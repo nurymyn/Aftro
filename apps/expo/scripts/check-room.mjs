@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { estimateRoom, floorPoint, parseMeasurement, roomQuantities } from '../src/room.ts';
+
+const tilt = Math.PI / 6;
+const up = { x: 0, y: Math.cos(tilt), z: Math.sin(tilt) };
+const gravity = { x: 0, y: -9.81 * up.y, z: -9.81 * up.z };
+const field = { x: 0, y: 24 * Math.sin(tilt) - 31 * up.y, z: -24 * Math.cos(tilt) - 31 * up.z };
+const point = floorPoint(gravity, field, 1.4);
+assert.ok(point);
+assert.ok(Math.abs(point.x) < 1e-8);
+assert.ok(Math.abs(point.z - 1.4 / Math.tan(tilt)) < 1e-8);
+assert.equal(floorPoint({ x: 0, y: -9.81, z: 0 }, field, 1.4), null);
+assert.deepEqual(estimateRoom({ x: -1, z: 1 }, { x: 3, z: 1 }, { x: 3, z: 4 }), { width: 4, length: 3 });
+assert.equal(estimateRoom({ x: 0, z: 0 }, { x: 3, z: 0 }, { x: 5, z: 1 }), null);
+assert.equal(parseMeasurement('2,65', 1.8, 6), 2.65);
+assert.equal(parseMeasurement('2m', 1.8, 6), null);
+const quantities = roomQuantities({ width: 4, length: 3, height: 2.5 });
+assert.equal(quantities.floor, 12);
+assert.equal(quantities.wall, 35);
+assert.ok(Math.abs(quantities.order - 13.2) < 1e-8);
+console.log('Room checks passed: floor projection, rectangle validation, and material quantities.');
