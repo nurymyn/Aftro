@@ -1,0 +1,29 @@
+# Local environment
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Unity-generated files and device packages
+/apps/mobile/[Ll]ibrary/
+/apps/mobile/[Tt]emp/
+/apps/mobile/[Oo]bj/
+/apps/mobile/[Bb]uild/
+/apps/mobile/[Bb]uilds/
+/apps/mobile/[Ll]ogs/
+/apps/mobile/[Uu]ser[Ss]ettings/
+*.apk
+*.aab
+*.ipa
+*.keystore
+
+# Editor and system files
+.idea/
+.vs/
+.DS_Store
+Thumbs.db
