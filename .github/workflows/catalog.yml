@@ -1,0 +1,29 @@
+name: Catalog checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start catalog
+        run: docker compose up --build --detach
+      - name: Verify the sample apartment and finish packages
+        run: |
+          curl --fail --silent --show-error --retry 20 --retry-all-errors \
+            http://127.0.0.1:8000/api/v1/apartments/demo-apartment > /tmp/apartment.json
+          python3 -c 'import json; from pathlib import Path; data = json.loads(Path("/tmp/apartment.json").read_text()); assert {item["slug"] for item in data["finishes"]} == {"light", "warm"}'
+      - name: Show service logs after a failure
+        if: failure()
+        run: docker compose logs
+      - name: Stop catalog
+        if: always()
+        run: docker compose down --volumes
