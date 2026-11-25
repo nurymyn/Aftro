@@ -10,22 +10,36 @@ permissions:
 
 jobs:
   catalog:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      PGUSER: aftro_ci
+      PGPASSWORD: aftro-ci-local
+      PGDATABASE: aftro
     steps:
       - uses: actions/checkout@v4
-      - name: Start catalog
-        run: docker compose up --build --detach
-      - name: Verify the sample apartment and finish packages
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Start PostgreSQL and install Python dependencies
         run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE aftro_ci WITH LOGIN CREATEDB PASSWORD 'aftro-ci-local'"
+          python -m pip install -r services/api/requirements.txt
+      - name: Prepare and reopen the catalog
+        run: |
+          python scripts/start-local.py --prepare-only
+          psql -h 127.0.0.1 -v ON_ERROR_STOP=1 -c "UPDATE apartments SET name = 'Aftro CI room' WHERE slug = 'demo-apartment'"
+          python scripts/start-local.py --prepare-only
+      - name: Start API and verify the existing catalog
+        run: |
+          python scripts/start-local.py > "$RUNNER_TEMP/aftro-api.log" 2>&1 &
           curl --fail --silent --show-error --retry 20 --retry-all-errors \
-            http://127.0.0.1:8000/api/v1/apartments/demo-apartment > /tmp/apartment.json
-          python3 -c 'import json; from pathlib import Path; data = json.loads(Path("/tmp/apartment.json").read_text()); assert {item["slug"] for item in data["finishes"]} == {"light", "warm"}'
+            http://127.0.0.1:8000/api/v1/apartments/demo-apartment > "$RUNNER_TEMP/aftro-apartment.json"
+          python -c 'import json, sys; data = json.load(open(sys.argv[1])); assert data["name"] == "Aftro CI room"; assert {item["slug"] for item in data["finishes"]} == {"light", "warm"}' "$RUNNER_TEMP/aftro-apartment.json"
       - name: Verify accounts and saved finishes
-        run: python3 scripts/check-accounts.py
-      - name: Show service logs after a failure
+        run: python scripts/check-accounts.py
+      - name: Show API logs after a failure
         if: failure()
-        run: docker compose logs
-      - name: Stop catalog
-        if: always()
-        run: docker compose down --volumes
+        run: |
+          if [ -f "$RUNNER_TEMP/aftro-api.log" ]; then cat "$RUNNER_TEMP/aftro-api.log"; fi

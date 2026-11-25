@@ -22,9 +22,9 @@ Scan `demo-apartment` or `aftro://apartment/demo-apartment` or enter
 
 ## Accounts and VR
 
-At the repository root, run `docker compose up --build`. In the iPhone app,
-open **Settings** and enter the API origin. Use HTTPS or a local origin such
-as `http://192.168.1.42:8000` with the API port bound to the computer's Wi-Fi
-address. Accounts and the browser's 3D/VR tour use the configured server.
+Start the [local PostgreSQL and Python API](../../README.md#local-development).
+Bind the API to the computer's Wi-Fi address with `--host` for local phone
+testing. In the iPhone app, open **Settings** and enter the API origin, such
+as `http://192.168.1.42:8000`. Use HTTPS for a hosted server. Accounts and the browser's 3D/VR tour use the configured server.
 Phone registration requires the Twilio Verify settings described in the
 [root README](../../README.md#accounts).
