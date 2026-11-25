@@ -1,19 +1,30 @@
-# Aftro for Android and iOS
+# Aftro for iPhone
 
-Target both Android and iOS with one Unity C# project. Add Unity AR Foundation
-and the platform providers for Android (ARCore) and iOS (ARKit). Use an Android
-or iOS device that supports the relevant provider for the first demo.
+Aftro is a native SwiftUI app for iOS 17 and later. The demo apartment and
+comparison open offline.
 
-## First camera demo
+## Run on a device
 
-1. Retrieve the apartment and two finish options from the catalog API.
-2. Load the same measured room model for both options.
-3. Use the real room's floor and two reference points to align the model.
-   The first point sets the origin and the second sets its direction.
-4. Anchor the model in that position. Change materials and furnishings when
-   the user changes the finish option.
+1. Open `apps/mobile/Aftro.xcodeproj` in Xcode on a Mac.
+2. Select the Aftro target and your development team under **Signing &
+   Capabilities**. Choose an available bundle identifier for your team.
+3. Connect your iPhone, choose it as the run destination and click **Run**.
+   Follow Xcode's prompts for trust and Developer Mode.
 
-For a real device test, use a reachable development API endpoint. A phone's
-localhost points to the phone itself.
+Use **Compare finishes** to compare and save a style. In the AR camera, tap
+the left floor corner of the back wall and then a point to its right along
+that same wall. The finish picker changes the anchored room. The demo is a
+4.5 × 3.6 m room with a 2.8 m ceiling. Camera and QR features require a
+compatible physical device.
 
-Evaluate Apple RoomPlan separately once automatic scanning is in scope.
+Scan `demo-apartment` or `aftro://apartment/demo-apartment` or enter
+`demo-apartment` by hand.
+
+## Accounts and VR
+
+At the repository root, run `docker compose up --build`. In the iPhone app,
+open **Settings** and enter the API origin. Use HTTPS or a local origin such
+as `http://192.168.1.42:8000` with the API port bound to the computer's Wi-Fi
+address. Accounts and the browser's 3D/VR tour use the configured server.
+Phone registration requires the Twilio Verify settings described in the
+[root README](../../README.md#accounts).

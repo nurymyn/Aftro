@@ -2,14 +2,14 @@
 
 An AR renovation preview for unfinished apartments. The interactive design
 prototype lets buyers explore the apartment, compare two finishes and try the
-camera setup flow. A shared Unity app is planned for on-device AR.
+camera setup flow. The native [iPhone app](apps/mobile/README.md) adds live QR scanning and a camera that anchors a finish to the room.
 
 ## Repository layout
 
 | Path | Purpose |
 | --- | --- |
 | `apps/web-preview/` | Interactive mobile interface presentation |
-| `apps/mobile/` | Unity AR implementation plan for Android and iOS |
+| `apps/mobile/` | Native SwiftUI and ARKit iPhone app |
 | `services/api/` | Python apartment and renovation catalog API |
 | `database/` | PostgreSQL schema and sample catalog |
 | `docs/` | Architecture and the first demo |
