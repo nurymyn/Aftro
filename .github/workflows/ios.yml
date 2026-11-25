@@ -27,6 +27,7 @@ jobs:
       - name: Build for iPhone simulator
         run: xcodebuild -project "$PROJECT" -scheme Aftro -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/aftro-simulator" CODE_SIGNING_ALLOWED=NO build
       - name: Launch Aftro on a simulator
+        timeout-minutes: 5
         run: |
           set -euo pipefail
           device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; groups=json.load(sys.stdin)["devices"]; print(next(d["udid"] for runtime, devices in reversed(list(groups.items())) if "iOS-" in runtime for d in devices if d["name"].startswith("iPhone") and d["isAvailable"]))')
@@ -36,10 +37,18 @@ jobs:
           xcrun simctl launch "$device" kz.aftro.mobile
           sleep 3
           xcrun simctl io "$device" screenshot "$RUNNER_TEMP/Aftro-iPhone.png"
-      - name: Build unsigned iPhone binary
-        run: xcodebuild -project "$PROJECT" -scheme Aftro -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/aftro-device" CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         if: success()
         with:
           name: aftro-iphone-simulator
           path: ${{ runner.temp }}/Aftro-iPhone.png
+
+  device:
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      PROJECT: apps/mobile/Aftro.xcodeproj
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build unsigned iPhone binary
+        run: xcodebuild -project "$PROJECT" -scheme Aftro -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/aftro-device" CODE_SIGNING_ALLOWED=NO build
